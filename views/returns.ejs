@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
+  
+<link href="/main.css" rel="stylesheet"></head>
+<body>
+    <div class="app-container app-theme-white body-tabs-shadow fixed-sidebar fixed-header">
+        <div class="app-header header-shadow">
+            <div class="app-header__logo">
+                <div class="logo-src"></div>
+                <div class="header__pane ml-auto">
+                    <div>
+                        <button type="button" class="hamburger close-sidebar-btn hamburger--elastic" data-class="closed-sidebar">
+                            <span class="hamburger-box">
+                                <span class="hamburger-inner"></span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="app-header__mobile-menu">
+                <div>
+                    <button type="button" class="hamburger hamburger--elastic mobile-toggle-nav">
+                        <span class="hamburger-box">
+                            <span class="hamburger-inner"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <div class="app-header__menu">
+                <span>
+                    <button type="button" class="btn-icon btn-icon-only btn btn-primary btn-sm mobile-toggle-header-nav">
+                        <span class="btn-icon-wrapper">
+                            <i class="fa fa-ellipsis-v fa-w-6"></i>
+                        </span>
+                    </button>
+                </span>
+            </div>    <div class="app-header__content">
+                <div class="app-header-left">
+                    <div class="search-wrapper">
+                        <!-- <div class="input-holder">
+                            <input type="text" class="search-input" placeholder="Type to search">
+                            <button class="search-icon"><span></span></button>
+                        </div> -->
+                        <button class="close"></button>
+                    </div>
+                    <ul class="header-menu nav">
+                        <li class="dropdown nav-item">
+                            <a href="javascript:void(0);" class="nav-link">
+                                <i class="nav-link-icon fa fa-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>        </div>
+                <div class="app-header-right">
+                    <div class="header-btn-lg pr-0">
+                        <div class="widget-content p-0">
+                            <div class="widget-content-wrapper">
+                                <div class="widget-content-left">
+                                    <div class="btn-group">
+                                        <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="p-0 btn">
+                                            <img width="42" class="rounded-circle" src="assets/images/avatars/profile.png" alt="">
+                                            <i class="fa fa-angle-down ml-2 opacity-8"></i>
+                                        </a>
+                                        <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                                            <button type="button" tabindex="0" class="dropdown-item">User Account</button>
+                                            <button type="button" tabindex="0" class="dropdown-item">Settings</button>
+                                            <h6 tabindex="-1" class="dropdown-header">Header</h6>
+                                            <button type="button" tabindex="0" class="dropdown-item">Actions</button>
+                                            <div tabindex="-1" class="dropdown-divider"></div>
+                                            <button type="button" tabindex="0" class="dropdown-item">Dividers</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="widget-content-left  ml-3 header-user-info">
+                                    <div class="widget-heading">
+                                        Alina Mclourd
+                                    </div>
+                                    <div class="widget-subheading">
+                                        VP People Manager
+                                    </div>
+                                </div>
+                                <div class="widget-content-right header-user-info ml-3">
+                                    <button type="button" class="btn-shadow p-1 btn btn-primary btn-sm show-toastr-example">
+                                        <i class="fa text-white fa-calendar pr-1 pl-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>        </div>
+            </div>
+        </div>        <div class="ui-theme-settings">
+            <div class="theme-settings__inner">
+                <div class="scrollbar-container">
+                    <div class="theme-settings__options-wrapper">
+                        <h3 class="themeoptions-heading">Layout Options
+                        </h3>
+                        <div class="p-3">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <div class="widget-content p-0">
+                                        <div class="widget-content-wrapper">
+                                            <div class="widget-content-left mr-3">
+                                                <div class="switch has-switch switch-container-class" data-class="fixed-header">
+                                                    <div class="switch-animate switch-on">
+                                                        <input type="checkbox" checked data-toggle="toggle" data-onstyle="success">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="widget-content-left">
+                                                <div class="widget-heading">Fixed Header
+                                                </div>
+                                                <div class="widget-subheading">Makes the header top fixed, always visible!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="widget-content p-0">
+                                        <div class="widget-content-wrapper">
+                                            <div class="widget-content-left mr-3">
+                                                <div class="switch has-switch switch-container-class" data-class="fixed-sidebar">
+                                                    <div class="switch-animate switch-on">
+                                                        <input type="checkbox" checked data-toggle="toggle" data-onstyle="success">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="widget-content-left">
+                                                <div class="widget-heading">Fixed Sidebar
+                                                </div>
+                                                <div class="widget-subheading">Makes the sidebar left fixed, always visible!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="widget-content p-0">
+                                        <div class="widget-content-wrapper">
+                                            <div class="widget-content-left mr-3">
+                                                <div class="switch has-switch switch-container-class" data-class="fixed-footer">
+                                                    <div class="switch-animate switch-off">
+                                                        <input type="checkbox" data-toggle="toggle" data-onstyle="success">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="widget-content-left">
+                                                <div class="widget-heading">Fixed Footer
+                                                </div>
+                                                <div class="widget-subheading">Makes the app footer bottom fixed, always visible!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="p-3">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <h5 class="pb-2">Page Section Tabs
+                                    </h5>
+                                    <div class="theme-settings-swatches">
+                                        <div role="group" class="mt-2 btn-group">
+                                            <button type="button" class="btn-wide btn-shadow btn-primary btn btn-secondary switch-theme-class" data-class="body-tabs-line">
+                                                Line
+                                            </button>
+                                            <button type="button" class="btn-wide btn-shadow btn-primary active btn btn-secondary switch-theme-class" data-class="body-tabs-shadow">
+                                                Shadow
+                                            </button>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        <div class="app-main">
+                <div class="app-sidebar sidebar-shadow">
+                    <div class="app-header__logo">
+                        <div class="logo-src"></div>
+                        <div class="header__pane ml-auto">
+                            <div>
+                                <button type="button" class="hamburger close-sidebar-btn hamburger--elastic" data-class="closed-sidebar">
+                                    <span class="hamburger-box">
+                                        <span class="hamburger-inner"></span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-header__mobile-menu">
+                        <div>
+                            <button type="button" class="hamburger hamburger--elastic mobile-toggle-nav">
+                                <span class="hamburger-box">
+                                    <span class="hamburger-inner"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="app-header__menu">
+                        <span>
+                            <button type="button" class="btn-icon btn-icon-only btn btn-primary btn-sm mobile-toggle-header-nav">
+                                <span class="btn-icon-wrapper">
+                                    <i class="fa fa-ellipsis-v fa-w-6"></i>
+                                </span>
+                            </button>
+                        </span>
+                    </div>    <div class="scrollbar-sidebar">
+                        <div class="app-sidebar__inner">
+                            <ul class="vertical-nav-menu">
+                                <li class="app-sidebar__heading">Dashboards</li>
+                                <li>
+                                    <a href="/" >
+                                        <i class="metismenu-icon pe-7s-rocket"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                                <li class="app-sidebar__heading">Investments</li>
+                                <li  >
+                                    <a href="/invest">
+                                        <i class="metismenu-icon pe-7s-plus"></i>
+                                        Make an Investment
+                                    </a>
+                                </li>
+                                <li  >
+                                    <a href="/return-on-investments" class="mm-active">
+                                        <i class="metismenu-icon pe-7s-mail-open-file"></i>
+                                        Returns
+                                    </a>
+                                </li>
+
+                                <li  >
+                                    <a href="/analytics">
+                                        <i class="metismenu-icon pe-7s-graph1"></i>
+                                        Analysis
+                                    </a>
+                                </li>
+                                <li class="app-sidebar__heading">Profile</li>
+                                <li>
+                                    <a href="/profile">
+                                        <i class="metismenu-icon pe-7s-user"></i>
+                                        User details
+                                    </a>
+                                </li>
+                                <li class="app-sidebar__heading">Withdrawals</li>
+                                <li>
+                                    <a href="/withdrawal">
+                                        <i class="metismenu-icon pe-7s-culture">
+                                        </i>Withdraw
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/history">
+                                        <i class="metismenu-icon pe-7s-bookmarks">
+                                        </i>Withdrawals history
+                                    </a>
+                                </li>
+                                <li class="app-sidebar__heading">Log Out</li>
+                                <li>
+                                    <a href="/users/logout">
+                                        <i class="metismenu-icon pe-7s-crop">
+                                        </i>Log out
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div> 
+                <div class="app-main__outer">
+                    <div class="app-main__inner">
+                        <div class="app-page-title">
+                            <div class="page-title-wrapper">
+                                <div class="page-title-heading">
+                                    <div class="page-title-icon">
+                                        <i class="pe-7s-bandaid icon-gradient bg-amy-crisp">
+                                        </i>
+                                    </div>
+                                    <div> Quarter Returns
+                                        <div class="page-title-subheading">Huge selection and return per plan this Quarter.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="page-title-actions">
+                                    <div class="d-inline-block dropdown">
+                                        <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                                            <ul class="nav flex-column">
+                                                <li class="nav-item">
+                                                    <a href="javascript:void(0);" class="nav-link">
+                                                        <i class="nav-link-icon lnr-inbox"></i>
+                                                        <span>
+                                                            Inbox
+                                                        </span>
+                                                        <div class="ml-auto badge badge-pill badge-secondary">86</div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="javascript:void(0);" class="nav-link">
+                                                        <i class="nav-link-icon lnr-book"></i>
+                                                        <span>
+                                                            Book
+                                                        </span>
+                                                        <div class="ml-auto badge badge-pill badge-danger">5</div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="javascript:void(0);" class="nav-link">
+                                                        <i class="nav-link-icon lnr-picture"></i>
+                                                        <span>
+                                                            Picture
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a disabled="" href="javascript:void(0);" class="nav-link disabled">
+                                                        <i class="nav-link-icon lnr-file-empty"></i>
+                                                        <span>
+                                                            File Disabled
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>    </div>
+                        </div>            <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
+                            <li class="nav-item">
+                                <a role="tab" class="nav-link active" id="tab-0" data-toggle="tab" href="#tab-content-0">
+                                    <span>Q3 Charts</span>
+                                </a>
+                            </li>
+                            <!-- <li class="nav-item">
+                                <a role="tab" class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1">
+                                    <span>Lines &amp; Bars Charts</span>
+                                </a>
+                            </li> -->
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane tabs-animation fade show active" id="tab-content-0" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body"><div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                                                <h5 class="card-title">Index funds and Bonds</h5>
+                                                <canvas id="chart-area" width="848" height="424" class="chartjs-render-monitor" style="display: block; height: 212px; width: 424px;"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body"><div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                                                <h5 class="card-title">Stock Trading and Options </h5>
+                                                <canvas id="radar-chart" width="848" height="424" class="chartjs-render-monitor" style="display: block; height: 212px; width: 424px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body"><div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                                                <h5 class="card-title">Oil and Commodities</h5>
+                                                <canvas id="doughnut-chart" width="848" height="424" class="chartjs-render-monitor" style="display: block; height: 212px; width: 424px;"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body"><div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                                                <h5 class="card-title">Cryptocurrency</h5>
+                                                <canvas id="polar-chart" width="848" height="424" class="chartjs-render-monitor" style="display: block; height: 212px; width: 424px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                            <!-- </div>
+                            <div class="tab-pane tabs-animation fade" id="tab-content-1" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Vertical Bars</h5>
+                                                <canvas id="canvas" height="0" width="0" class="chartjs-render-monitor" style="display: block; height: 0px; width: 0px;"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Horizontal Bars</h5>
+                                                <canvas id="chart-horiz-bar" height="0" width="0" class="chartjs-render-monitor" style="display: block; height: 0px; width: 0px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Line Chart</h5>
+                                                <div style="height: 400px">
+                                                    <canvas id="line-chart" height="0" width="0" class="chartjs-render-monitor" style="display: block; height: 0px; width: 0px;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="main-card mb-3 card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Stacked Bars</h5>
+                                                <canvas id="stacked-bars-chart" height="0" width="0" class="chartjs-render-monitor" style="display: block; height: 0px; width: 0px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+            
+                  </div>
+                
+                   
+    </div>
+<script type="text/javascript" src="./assets/scripts/main.js"></script></body>
+</html>
