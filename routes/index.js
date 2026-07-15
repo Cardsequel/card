@@ -53,12 +53,6 @@ router.get('/carding', ensureAuthenticated, (req, res) =>
   })
   );
 
-router.get('/settings', ensureAuthenticated, (req, res) =>
-  res.render('settings', {
-    user: req.user
-  })
-);
-
 router.get('/withdrawal-success', ensureAuthenticated, (req, res) =>
   res.render('success', {
     user: req.user
