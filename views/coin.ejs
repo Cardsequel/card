@@ -60,35 +60,8 @@
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
   
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/">
-              <i class="icon-grid menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/carding">
-              <i class="ti-credit-card menu-icon"></i>
-              <span class="menu-title">Get a card</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="/earnings">
-              <i class="icon-bar-graph menu-icon"></i>
-              <span class="menu-title">Cash back</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/help-desk">
-              <i class="icon-columns menu-icon"></i>
-              <span class="menu-title">Help desk</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <% var sidebarRole = 'user'; var activePage = '/carding'; %>
+      <% include ./partials/dashboard-sidebar %>
     <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
@@ -142,4 +115,3 @@
 </body>
 <% include ./partials/chat %>
 </html>
-

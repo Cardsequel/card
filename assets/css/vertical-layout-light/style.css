@@ -28477,6 +28477,20 @@ div.tagsinput span.tag a {
   -ms-transition: width 0.25s ease, background 0.25s ease;
 }
 
+@media (min-width: 992px) {
+  .container-scroller {
+    overflow: visible;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 60px;
+    align-self: flex-start;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+}
+
 .sidebar .nav {
   overflow: hidden;
   flex-wrap: nowrap;

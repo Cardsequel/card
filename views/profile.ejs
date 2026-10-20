@@ -5,11 +5,12 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Skydash Admin</title>
+  <title>Your profile | Cardsequel</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="vendors/feather/feather.css">
   <link rel="stylesheet" href="vendors/ti-icons/css/themify-icons.css">
   <link rel="stylesheet" href="vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/password-toggle.css">
   <!-- endinject -->
   <!-- Plugin css for this page -->
   <link rel="stylesheet" href="vendors/datatables.net-bs4/dataTables.bootstrap4.css">
@@ -59,63 +60,92 @@
     </nav>
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/">
-              <i class="icon-grid menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/carding">
-              <i class="ti-credit-card menu-icon"></i>
-              <span class="menu-title">Get a card</span>
-            </a>
-          </li>
-  
-          <li class="nav-item">
-            <a class="nav-link" href="/earnings">
-              <i class="icon-bar-graph menu-icon"></i>
-              <span class="menu-title">Cash back</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <% var sidebarRole = 'user'; var activePage = '/profile'; %>
+      <% include ./partials/dashboard-sidebar %>
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
-          <div class="col-md-6 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <h4 class="card-title">Your Profile</h4>
-                <p class="card-description">
-                  Users basic profile
-                </p>
-                <form class="forms-sample">
-                  <div class="form-group">
-                    <label for="first_name">First Name</label>
-                    <input type="text" class="form-control" id="first_name" value="<%= user.first_name %>">
-                  </div>
-                  <div class="form-group">
-                    <label for="last_name">Last Name</label>
-                    <input type="text" class="form-control" id="lastname" value="<%= user.last_name %>">
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Email address</label>
-                    <input type="email" class="form-control" id="exampleInputEmail1" value="<%= user.email %>">
-                  </div>
-                  <div class="form-group">
-                    <label for="referal">Card Type</label>
-                    <input type="text" class="form-control" id="plantype" value="<%= user.plantype %>">
-                  </div>
-                  <div class="form-group">
-                    <label for="referal">Referal Code</label>
-                    <input type="text" class="form-control" id="referal" value="<%= user.referalcode %>">
-                  </div>
-                 
-                </form>
+          <div class="row">
+            <div class="col-xl-8 col-lg-10 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Your profile</h4>
+                  <p class="card-description">Update your name, email address, and wallet.</p>
+                  <% if (success_msg && success_msg.length) { %>
+                    <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+                  <% } %>
+                  <% if (error_msg && error_msg.length) { %>
+                    <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+                  <% } %>
+                  <form class="forms-sample" method="post" action="/profile">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="_action" value="update_profile">
+                    <div class="form-group">
+                      <label for="first_name">First name</label>
+                      <input type="text" class="form-control" id="first_name" name="first_name" maxlength="80" autocomplete="given-name" required value="<%= user.first_name %>">
+                    </div>
+                    <div class="form-group">
+                      <label for="last_name">Last name</label>
+                      <input type="text" class="form-control" id="last_name" name="last_name" maxlength="80" autocomplete="family-name" required value="<%= user.last_name %>">
+                    </div>
+                    <div class="form-group">
+                      <label for="email">Email address</label>
+                      <input type="email" class="form-control" id="email" name="email" maxlength="254" autocomplete="email" required value="<%= user.email %>">
+                    </div>
+                    <div class="form-group">
+                      <label for="wallet">Wallet address</label>
+                      <input type="text" class="form-control" id="wallet" name="wallet" maxlength="120" autocomplete="off" value="<%= user.wallet %>">
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Save profile</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-8 col-lg-10 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Change password</h4>
+                  <p class="card-description">Leave these fields blank if you do not want to change your password.</p>
+                  <form class="forms-sample" method="post" action="/profile">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="_action" value="change_password">
+                    <div class="form-group">
+                      <label for="current_password">Current password</label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="current_password" name="current_password" autocomplete="current-password">
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                            <i class="ti-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="new_password">New password</label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="new_password" name="new_password" minlength="6" maxlength="72" autocomplete="new-password">
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                            <i class="ti-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="confirm_password">Confirm new password</label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" maxlength="72" autocomplete="new-password">
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                            <i class="ti-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Update password</button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -138,6 +168,7 @@
   <script src="js/template.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/todolist.js"></script>
+  <script src="/js/password-toggle.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="js/dashboard.js"></script>
@@ -146,4 +177,3 @@
 </body>
 
 </html>
-

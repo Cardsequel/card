@@ -61,30 +61,8 @@
     <div class="container-fluid page-body-wrapper">
   
        
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/">
-              <i class="icon-grid menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/carding">
-              <i class="ti-credit-card menu-icon"></i>
-              <span class="menu-title">Get a card</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="/earnings">
-              <i class="icon-bar-graph menu-icon"></i>
-              <span class="menu-title">Cash back</span>
-            </a>
-          </li>
-          
-        </ul>
-      </nav>
+      <% var sidebarRole = 'user'; var activePage = '/carding'; %>
+      <% include ./partials/dashboard-sidebar %>
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
@@ -119,7 +97,7 @@
                    
                    
                     <div class="mb-3 text-center card card-body"><h2 class="card-title">RTP1 Cash Card</h2>
-                        <h2 class="widget-numbers text-primary">$399.99</h2>
+                        <h2 class="widget-numbers text-primary">$699.99</h2>
                         <hr>
                         <p class="page-title-subheading text-dark"  style="font-size: 1.4rem;">Annual Fees</p>
                         <hr>
@@ -140,7 +118,7 @@
                    
                     <div class="mb-3 text-center card card-body">
                         <h5 class="card-title">RTP17 Cash Card</h5>
-                        <h2 class="widget-numbers text-primary">$549.99</h2>
+                        <h2 class="widget-numbers text-primary">$1,119.99</h2>
                         <hr>
                         <p class="page-title-subheading text-dark"  style="font-size: 1.4rem;">Annual Fees</p>
                         <hr>
@@ -163,7 +141,7 @@
                 <div class="col-md-4">
                    
                    
-                    <div class="mb-3 text-center card card-body"><h5 class="card-title">RTP21 Cash Card</h5><h2 class="widget-numbers text-primary">$899.99 </h2>
+                    <div class="mb-3 text-center card card-body"><h5 class="card-title">RTP21 Cash Card</h5><h2 class="widget-numbers text-primary">$1,599.99 </h2>
                       <hr>
                         <p class="page-title-subheading text-dark"  style="font-size: 1.4rem;">Annual Fees</p>
                         <hr>
@@ -216,4 +194,3 @@
 </body>
 
 </html>
-

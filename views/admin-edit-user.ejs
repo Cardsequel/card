@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Edit account | Cardsequel Admin</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/"><img src="/images/logofull.png" class="mr-2" alt="Cardsequel"/></a>
+        <a class="navbar-brand brand-logo-mini" href="/"><img src="/images/logo-mini.png" alt="Cardsequel"/></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize" aria-label="Minimize navigation">
+          <span class="icon-menu"></span>
+        </button>
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" id="profileDropdown" aria-label="Account menu">
+              <img src="/images/faces/user.png" alt="profile"/>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="/profile"><i class="ti-user text-primary"></i>Profile</a>
+              <a class="dropdown-item" href="/users/logout"><i class="ti-power-off text-primary"></i>Logout</a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas" aria-label="Open navigation">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'admin'; var activePage = '/admin/users'; %>
+      <% include ./partials/dashboard-sidebar %>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 grid-margin">
+              <h3 class="font-weight-bold">Edit account</h3>
+              <h6 class="font-weight-normal mb-0">Update account details, access category, balances, and card information.</h6>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title"><%= account.first_name %> <%= account.last_name %></h4>
+                  <% if (error_msg && error_msg.length) { %>
+                    <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+                  <% } %>
+
+                  <form class="forms-sample" method="post" action="/admin/users/<%= encodeURIComponent(account._id) %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="row">
+                      <div class="col-md-6 form-group">
+                        <label for="first_name">First name</label>
+                        <input class="form-control" id="first_name" name="first_name" type="text" maxlength="80" required value="<%= account.first_name %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="last_name">Last name</label>
+                        <input class="form-control" id="last_name" name="last_name" type="text" maxlength="80" required value="<%= account.last_name %>">
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 form-group">
+                        <label for="email">Email address</label>
+                        <input class="form-control" id="email" name="email" type="email" maxlength="254" required value="<%= account.email %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="category">Account category</label>
+                        <select class="form-control" id="category" name="category" required>
+                          <option value="user" <%= account.category === 'user' ? 'selected' : '' %>>User</option>
+                          <option value="admin" <%= account.category === 'admin' ? 'selected' : '' %>>Admin</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 form-group">
+                        <label for="wallet">Wallet</label>
+                        <input class="form-control" id="wallet" name="wallet" type="text" maxlength="120" value="<%= account.wallet || '' %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="code">Account code</label>
+                        <input class="form-control" id="code" name="code" type="text" maxlength="120" value="<%= account.code || '' %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="referalcode">Referral code</label>
+                        <input class="form-control" id="referalcode" name="referalcode" type="text" maxlength="120" value="<%= account.referalcode || '' %>">
+                      </div>
+                    </div>
+
+                    <h4 class="card-title mt-4">Balances and activity</h4>
+                    <div class="row">
+                      <div class="col-md-6 form-group">
+                        <label for="availbalance">Available balance</label>
+                        <input class="form-control" id="availbalance" name="availbalance" type="number" min="0" max="999999999999" step="0.01" required value="<%= account.availbalance %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="activedeposit">Active deposit</label>
+                        <input class="form-control" id="activedeposit" name="activedeposit" type="number" min="0" max="999999999999" step="0.01" required value="<%= account.activedeposit %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="activeinvestment">Active investment</label>
+                        <input class="form-control" id="activeinvestment" name="activeinvestment" type="number" min="0" max="999999999999" step="0.01" required value="<%= account.activeinvestment %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="cashback">Cashback</label>
+                        <input class="form-control" id="cashback" name="cashback" type="number" min="0" max="999999999999" step="0.01" required value="<%= account.cashback %>">
+                      </div>
+                      <div class="col-md-6 form-group">
+                        <label for="todaysspending">Today's spending</label>
+                        <input class="form-control" id="todaysspending" name="todaysspending" type="number" min="0" max="999999999999" step="0.01" required value="<%= account.todaysspending %>">
+                      </div>
+                    </div>
+
+                    <h4 class="card-title mt-4">Card details</h4>
+                    <div class="row">
+                      <div class="col-md-6 form-group">
+                        <label for="cardnumber">Card number</label>
+                        <input class="form-control" id="cardnumber" name="cardnumber" type="text" maxlength="64" value="<%= account.cardnumber || '' %>">
+                      </div>
+                      <div class="col-md-2 form-group">
+                        <label for="CVV">CVV</label>
+                        <input class="form-control" id="CVV" name="CVV" type="text" maxlength="4" value="<%= account.CVV || '' %>">
+                      </div>
+                      <div class="col-md-4 form-group">
+                        <label for="expirydate">Expiry date</label>
+                        <input class="form-control" id="expirydate" name="expirydate" type="text" maxlength="10" value="<%= account.expirydate || '' %>">
+                      </div>
+                    </div>
+
+                    <h4 class="card-title mt-4">Password reset</h4>
+                    <div class="form-group">
+                      <label for="new_password">Set a new password</label>
+                      <input class="form-control" id="new_password" name="new_password" type="password" minlength="6" maxlength="72" autocomplete="new-password">
+                      <small class="form-text text-muted">Leave blank to keep the current password. Password and password confirmation values are never shown here.</small>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="date">Registration date</label>
+                      <input class="form-control" id="date" name="date" type="date" required value="<%= account.date && Number.isFinite(new Date(account.date).getTime()) ? new Date(account.date).toISOString().slice(0, 10) : '' %>">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mr-2">Save changes</button>
+                    <a class="btn btn-light" href="/admin">Cancel</a>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+  <script src="/js/settings.js"></script>
+  <script src="/js/todolist.js"></script>
+  <% include ./partials/chat %>
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Card top up | Cardsequel</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/"><img src="/images/logofull.png" class="mr-2" alt="Cardsequel"></a>
+        <a class="navbar-brand brand-logo-mini" href="/"><img src="/images/logo-mini.png" alt="Cardsequel"></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" id="profileDropdown" aria-label="Account menu">
+              <img src="/images/faces/user.png" alt="profile">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="/profile"><i class="ti-user text-primary"></i>Profile</a>
+              <a class="dropdown-item" href="/users/logout"><i class="ti-power-off text-primary"></i>Logout</a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas" aria-label="Open navigation">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'user'; var activePage = '/card-top-up'; %>
+      <% include ./partials/dashboard-sidebar %>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 grid-margin">
+              <h3 class="font-weight-bold">Top up your card</h3>
+              <h6 class="font-weight-normal mb-0">Submit a top-up request for review. Your available balance changes only after payment is confirmed.</h6>
+            </div>
+          </div>
+
+          <% if (success_msg && success_msg.length) { %>
+            <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+          <% } %>
+          <% if (error_msg && error_msg.length) { %>
+            <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+          <% } %>
+
+          <div class="row">
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Request a top up</h4>
+                  <p class="card-description">Enter the amount and, if available, the payment transaction reference.</p>
+                  <form class="forms-sample" method="post" action="/card-top-up">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="form-group">
+                      <label for="amount">Amount</label>
+                      <div class="input-group">
+                        <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                        <input class="form-control" id="amount" name="amount" type="number" min="0.01" max="999999999999" step="0.01" required>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="paymentReference">Payment reference (optional)</label>
+                      <input class="form-control" id="paymentReference" name="paymentReference" type="text" maxlength="120" autocomplete="off">
+                      <small class="form-text text-muted">Add a transaction reference so an admin can match your payment.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Submit top-up request</button>
+                    <a href="/dashboard" class="btn btn-light">Cancel</a>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Your available balance</h4>
+                  <p class="fs-30 mb-2">$<%= Number(user.availbalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+                  <p class="card-description">Pending requests do not change your balance.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Your top-up requests</h4>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr><th>Submitted</th><th>Amount</th><th>Payment reference</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <% if (requests.length) { %>
+                          <% requests.forEach(request => { %>
+                            <tr>
+                              <td><%= new Date(request.createdAt).toLocaleString() %></td>
+                              <td>$<%= Number(request.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                              <td><%= request.paymentReference || '—' %></td>
+                              <td><label class="badge <%= request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning' %>"><%= request.status %></label></td>
+                            </tr>
+                          <% }); %>
+                        <% } else { %>
+                          <tr><td colspan="4" class="text-center">You have not submitted a top-up request yet.</td></tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+  <% include ./partials/chat %>
+</body>
+</html>

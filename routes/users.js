@@ -59,7 +59,6 @@ router.post('/register', (req, res) => {
           last_name,
           email,
           password,
-          password2,
           code,
           referalcode
         });
@@ -1110,10 +1109,21 @@ router.post('/register', (req, res) => {
 
 // Login
 router.post('/login', (req, res, next) => {
-  passport.authenticate('local', {
-    successRedirect: '/dashboard',
-    failureRedirect: '/users/login',
-    failureFlash: true
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      req.flash('error', info.message);
+      return res.redirect('/users/login');
+    }
+
+    return req.logIn(user, loginError => {
+      if (loginError) {
+        return next(loginError);
+      }
+      return res.redirect(user.category === 'admin' ? '/admin-dashboard' : '/dashboard');
+    });
   })(req, res, next);
 });
 

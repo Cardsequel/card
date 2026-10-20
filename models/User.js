@@ -21,30 +21,35 @@ first_name: {
     type: String,
     required: true
   },
-  password2:{
+  category: {
     type: String,
-    required: true
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   code:{
     type: String,
     required: false
     
   },
-  availbalance:{
+  referalcode: {
     type: String,
-    default: '00.00'
+    required: false
+  },
+  availbalance:{
+    type: Number,
+    default: 0
   },
   activedeposit:{
-    type: String,
-    default: '00.00'
+    type: Number,
+    default: 0
   },
   activeinvestment:{
-    type: String,
-    default: '00.00'
+    type: Number,
+    default: 0
   },
   cashback:{
-    type: String,
-    default: '00.00'
+    type: Number,
+    default: 0
   },
   todaysspending :{
     type: Number,

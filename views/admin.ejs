@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Accounts | Cardsequel Admin</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/"><img src="/images/logofull.png" class="mr-2" alt="Cardsequel"/></a>
+        <a class="navbar-brand brand-logo-mini" href="/"><img src="/images/logo-mini.png" alt="Cardsequel"/></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize" aria-label="Minimize navigation">
+          <span class="icon-menu"></span>
+        </button>
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" id="profileDropdown" aria-label="Account menu">
+              <img src="/images/faces/user.png" alt="profile"/>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="/profile">
+                <i class="ti-user text-primary"></i>
+                Profile
+              </a>
+              <a class="dropdown-item" href="/users/logout">
+                <i class="ti-power-off text-primary"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas" aria-label="Open navigation">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'admin'; var activePage = '/admin'; %>
+      <% include ./partials/dashboard-sidebar %>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 grid-margin">
+              <div class="row">
+                <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                  <h3 class="font-weight-bold">Account administration</h3>
+                  <h6 class="font-weight-normal mb-0">Welcome back, <%= user.first_name %>. Manage and review registered accounts.</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12 col-md-12 grid-margin transparent">
+              <div class="row">
+                <div class="col-md-4 mb-4 stretch-card transparent">
+                  <div class="card data-icon-card-primary">
+                    <div class="card-body">
+                      <p class="mb-4">Registered accounts</p>
+                      <p class="fs-30 mb-2"><%= users.length %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-4 stretch-card transparent">
+                  <div class="card data-icon-card-primary">
+                    <div class="card-body">
+                      <p class="mb-4">Administrators</p>
+                      <p class="fs-30 mb-2"><%= users.filter(account => account.category === 'admin').length %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-4 stretch-card transparent">
+                  <div class="card card-inverse-success">
+                    <div class="card-body">
+                      <p class="mb-4">V1 accounts</p>
+                      <p class="fs-30 mb-2"><%= users.filter(account => account.category !== 'admin').length %></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Registered accounts</h4>
+                  <p class="card-description">Account category and registration date</p>
+                  <% if (success_msg && success_msg.length) { %>
+                    <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+                  <% } %>
+                  <% if (error_msg && error_msg.length) { %>
+                    <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+                  <% } %>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Account</th>
+                          <th>Email</th>
+                          <th>Category</th>
+                          <th>Joined</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (users.length) { %>
+                          <% users.forEach(account => { %>
+                            <tr>
+                              <td><%= account.first_name %> <%= account.last_name %></td>
+                              <td><%= account.email %></td>
+                              <td>
+                                <label class="badge <%= account.category === 'admin' ? 'badge-success' : 'badge-light' %>">
+                                  <%= account.category || 'user' %>
+                                </label>
+                              </td>
+                              <td><%= account.date ? new Date(account.date).toLocaleDateString() : 'Unknown' %></td>
+                              <td>
+                                <a class="btn btn-sm btn-primary" href="/admin/users/<%= encodeURIComponent(account._id) %>/edit">Update user</a>
+                              </td>
+                            </tr>
+                          <% }); %>
+                        <% } else { %>
+                          <tr>
+                            <td colspan="5" class="text-center">No accounts have been registered yet.</td>
+                          </tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+  <script src="/js/settings.js"></script>
+  <script src="/js/todolist.js"></script>
+  <% include ./partials/chat %>
+</body>
+
+</html>

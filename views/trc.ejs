@@ -60,35 +60,8 @@
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
   
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/">
-              <i class="icon-grid menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/carding">
-              <i class="icon-credit-card menu-icon"></i>
-              <span class="menu-title">Get a card</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="/earnings">
-              <i class="icon-bar-graph menu-icon"></i>
-              <span class="menu-title">Cash back</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/help-desk">
-              <i class="icon-columns menu-icon"></i>
-              <span class="menu-title">Help desk</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <% var sidebarRole = 'user'; var activePage = '/carding'; %>
+      <% include ./partials/dashboard-sidebar %>
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
@@ -124,25 +97,26 @@
                          
                             <div class="col-12">
                               <div >
-                                <img src="/TRX.png" alt="" class="d-block mb-4" width="300px"  height="300px">
+                                <img src="<%= paymentWalletQr %>" alt="USDT TRC-20 payment QR" class="d-block mb-4" width="300px" height="300px">
                                 <div class="form-group">
                                   <input
-                                    type="text"
+                                    type="hidden"
                                     spellcheck="false"
                                     id="address"
                                     name="address"
                                     class="form-control"
-                                    value="TAv58pjfvgKDzPbK7cssTb4uYSbk1PMFuE"
+                                    value="<%= paymentWalletAddresses.usdtTron %>"
                                     style="opacity: 0; margin-bottom: -4px;"
                                   />
                                 </div>
-                                <p class="font-weight-bold d-block" style="color: black;" >TAv58pjfvgKDzPbK7cssTb4uYSbk1PMFuE</p>
+                                <p class="font-weight-bold d-block" style="color: black;" ><%= paymentWalletAddresses.usdtTron %></p>
                                 <p class="font-weight-bold text-primary">Transmit Payment to the USDT(TRC20) wallet Address above to complete  transaction.</p>
-                                <span><button type="button" class="btn text-uppercase font-weight-bold text-light bg-primary py-2 mb-5" id="copy">copy Address</button></span>
+                                <button type="button" class="btn text-uppercase font-weight-bold text-light bg-primary py-2 mb-2" data-copy-wallet="<%= paymentWalletAddresses.usdtTron %>">Copy wallet address</button>
+                                <small class="form-text" data-copy-feedback aria-live="polite"></small>
                             </div>
                           </div>
                         </div>
-                        <a href="/deposit-success" class=" col-7 btn text-center text-uppercase font-weight-bold text-light py-2  mx-auto mb-4" style="background-color: #f7931a; color: white;">Confirm payment</a>
+                        <a href="/deposit-success" class="col-7 btn btn-primary text-center text-uppercase font-weight-bold text-light py-2 mx-auto mb-4">Confirm payment</a>
                       </div>
                     </div>
                   </div>
@@ -176,20 +150,6 @@
         setInterval(counting, 1000);
             
         
-        copy = document.getElementById("copy");
-        var copyText = document.getElementById("address");
-        copy.addEventListener("click", () =>
-         {
-            copyText.select();
-            document.execCommand("copy")
-          }
-        
-        )
-        
-        copyText.addEventListener("click", (e)=>{
-            e.preventDefault();
-        })
-        
         //  show the correct thing when  user tries to withdraw
         let balance = document.getElementById('balance-amt');
         let starter = document.getElementById('starter');
@@ -201,6 +161,7 @@
         </script>
                    
   <script src="vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/copy-wallet-address.js"></script>
   <!-- endinject -->
   <!-- Plugin js for this page -->
   <script src="vendors/chart.js/Chart.min.js"></script>
@@ -223,4 +184,3 @@
 </body>
 
 </html>
-

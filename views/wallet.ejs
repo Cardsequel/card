@@ -12,6 +12,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
   <link rel="shortcut icon" href="assets/images/credit-card-1.png" type="image/x-icon">
   <meta name="description" content="">
+  <style>
+    .wallet-assets-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 27px 0;
+    }
+
+    .wallet-assets-title {
+      margin: 0 0 36px;
+      font-size: clamp(2.5rem, 5.5vw, 3.25rem);
+      line-height: 1.05;
+      font-weight: 400;
+      font-family: 'Rubik', Arial, sans-serif;
+      color: #2b2d30;
+      text-align: left;
+    }
+
+    .wallet-assets-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wallet-assets-item {
+      display: flex;
+      align-items: center;
+      gap: 19px;
+      min-height: 46px;
+      font-size: clamp(1.35rem, 2vw, 1.4rem);
+      line-height: 1.2;
+      color: #1f2228;
+      font-weight: 700;
+      font-family: 'Rubik', Arial, sans-serif;
+      text-align: left;
+    }
+
+    .wallet-check {
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #6eeb9d;
+      position: relative;
+    }
+
+    .wallet-check::after {
+      content: "✓";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111111;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .wallet-assets-wrap {
+        padding: 16px 20px 0;
+      }
+
+      .wallet-assets-title {
+        font-size: clamp(2rem, 8vw, 2.5rem);
+        margin-bottom: 26px;
+      }
+
+      .wallet-assets-item {
+        gap: 15px;
+        min-height: 40px;
+      }
+
+      .wallet-check {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  </style>
   
   
   <title>wallet</title>
@@ -58,30 +139,22 @@
 
 <section data-bs-version="5.1" class="content8 cid-tuf0Vj7oj8" id="content8-z">
     
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="counter-container col-md-12 col-lg-9">
-                <h4 class="mbr-section-title mbr-fonts-style mb-4 display-2">
-                    Supported wallets and assets</h4>
-                <div class="mbr-text mbr-fonts-style display-7">
-                    <ul>
-                        <li><strong>International Global Pay </strong></li>
-                        <li><strong>Global Business Pay </strong></li>
-                        <li><strong>Instant wallet Pay </strong></li>
-                        <li><strong>Nexa Global Pay </strong></li>
-                        <li><strong>Insta Merchant Pay </strong></li>
-                        <li><strong>Universal Business Pay </strong></li>
-                        <li><strong>Advanced IWPS </strong></li>
-                        <li><strong>Staxeblock USDT </strong></li>
-                        <li><strong>Global Swift Pay </strong></li>
-                        <li><strong>Global Swift US </strong></li>
-                        <li><strong>Freedom Pay </strong></li>
-                        <li><strong>Quick wallet Pay </strong></li>
-                      
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <div class="wallet-assets-wrap">
+      <h2 class="wallet-assets-title">Supported wallets and assets</h2>
+      <ul class="wallet-assets-list">
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>International Global Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Global Business Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Instant wallet Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Nexa Global Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Insta Merchant Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Universal Business Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Advanced IWPS</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Staxeblock USDT</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Global Swift Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Global Swift US</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Freedom Pay</span></li>
+        <li class="wallet-assets-item"><span class="wallet-check" aria-hidden="true"></span><span>Quick wallet Pay</span></li>
+      </ul>
     </div>
 </section>
 

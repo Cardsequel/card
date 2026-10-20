@@ -1,4 +1,39 @@
 <svg width="350" height="350" viewBox="0 0 350 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+<style>
+  g > path:nth-of-type(23),
+  g > path:nth-of-type(24),
+  g > path:nth-of-type(25),
+  g > path:nth-of-type(26),
+  g > path:nth-of-type(27),
+  g > path:nth-of-type(28),
+  g > path:nth-of-type(29),
+  g > path:nth-of-type(30),
+  g > path:nth-of-type(47),
+  g > path:nth-of-type(48),
+  g > path:nth-of-type(49),
+  g > path:nth-of-type(50),
+  g > path:nth-of-type(51),
+  g > path:nth-of-type(102),
+  g > path:nth-of-type(103),
+  g > path:nth-of-type(104),
+  g > path:nth-of-type(105) {
+    display: none;
+  }
+</style>
+<g clip-path="url(#clip0_908_10214)" aria-hidden="true">
+  <g transform="translate(193.5 55.5) rotate(0) scale(1.068 1.068) translate(-25 -40)">
+    <use href="#dashboardCard" width="50" height="80"/>
+  </g>
+  <g transform="translate(121 169.5) rotate(-30) scale(.682 .959) translate(-25 -40)">
+    <use href="#dashboardCard" width="50" height="80"/>
+  </g>
+  <g transform="translate(301 127) rotate(15) scale(.875 .929) translate(-25 -40)">
+    <use href="#dashboardCard" width="50" height="80"/>
+  </g>
+  <g transform="translate(50 94.5) rotate(4) scale(.945 .868) translate(-25 -40)">
+    <use href="#dashboardCard" width="50" height="80"/>
+  </g>
+</g>
 <g clip-path="url(#clip0_908_10214)">
 <path d="M233.44 202.61C233.44 202.61 236.81 202.75 238.57 206.44C238.57 206.44 237.15 220.98 236.44 235.86C236.44 235.86 230.78 241.96 214.9 240.82C198.29 239.63 191.66 228.92 191.66 228.92C191.66 228.92 193.36 217.01 193.5 207.66C193.5 207.66 193.13 204.05 196.53 204.05L197.11 204.03C197.15 204.98 197.17 205.95 197.18 206.95C197.18 206.95 198.74 210.35 213.06 209.64C227.37 208.93 232.9 206.24 232.9 206.24C232.9 206.24 233.04 204.91 233.14 202.6L233.44 202.61ZM231.42 225.23C231.42 223.36 229.9 221.84 228.02 221.84C226.15 221.84 224.63 223.36 224.63 225.23C224.63 227.11 226.15 228.62 228.02 228.62C229.9 228.62 231.42 227.11 231.42 225.23Z" fill="#201F1F"/>
 <path d="M235.45 242.1C230.92 285.47 219.86 335.92 219.86 335.92C206.83 339.39 191.74 334.42 180.71 329.18C181.73 325.83 185.37 312.19 183.07 295.5H183.06C182.58 291.99 181.83 288.34 180.74 284.62H180.68C188.43 259.06 190.67 235.06 190.67 235.06C190.67 235.06 193.78 241.81 210.79 244.93C227.8 248.05 235.45 242.1 235.45 242.1Z" fill="#201F1F"/>
@@ -113,6 +148,19 @@
 <path d="M80.5198 239.35C82.0698 242.3 81.0898 241.66 82.5798 244.42C81.2898 242 67.0698 244.38 64.1298 245C48.3198 248.35 38.5198 259.98 38.5198 259.98L34.7598 252.3C34.7598 252.3 50.8998 233.84 79.4998 238.42C80.7598 238.63 79.2298 239.17 80.5198 239.35Z" fill="#201F1F"/>
 </g>
 <defs>
+<symbol id="dashboardCard" viewBox="0 0 50 80">
+  <defs>
+    <clipPath id="dashboardCardClip">
+      <rect x="0" y="0" width="50" height="80" rx="5"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#dashboardCardClip)" font-family="Arial, sans-serif" fill="#201F1F">
+    <g transform="rotate(90 25 11.5)">
+      <rect x="20.5" y="8" width="9" height="7" rx="1.5" fill="#E8E9E5" stroke="#9AA19C" stroke-width=".7"/>
+      <path d="M25 8v7M20.5 11.5h9" stroke="#A7ADA8" stroke-width=".6"/>
+    </g>
+  </g>
+</symbol>
 <clipPath id="clip0_908_10214">
 <rect width="322.4" height="325.08" fill="white" transform="translate(15 12)"/>
 </clipPath>

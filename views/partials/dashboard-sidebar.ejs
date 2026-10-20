@@ -1,0 +1,79 @@
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+  <ul class="nav">
+    <% if (sidebarRole === 'admin') { %>
+      <li class="nav-item <%= activePage === '/admin-dashboard' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin-dashboard" <%- activePage === '/admin-dashboard' ? 'aria-current="page"' : '' %>>
+          <i class="icon-grid menu-icon"></i>
+          <span class="menu-title">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/admin' || activePage === '/admin/users' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin" <%- activePage === '/admin' || activePage === '/admin/users' ? 'aria-current="page"' : '' %>>
+          <i class="ti-user menu-icon"></i>
+          <span class="menu-title">Accounts</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/admin/top-ups' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin/top-ups" <%- activePage === '/admin/top-ups' ? 'aria-current="page"' : '' %>>
+          <i class="ti-wallet menu-icon"></i>
+          <span class="menu-title">Top-up requests</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/admin/crypto-withdrawals' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin/crypto-withdrawals" <%- activePage === '/admin/crypto-withdrawals' ? 'aria-current="page"' : '' %>>
+          <i class="ti-export menu-icon"></i>
+          <span class="menu-title">Crypto withdrawals</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/admin/payment-wallets' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin/payment-wallets" <%- activePage === '/admin/payment-wallets' ? 'aria-current="page"' : '' %>>
+          <i class="ti-wallet menu-icon"></i>
+          <span class="menu-title">Payment wallets</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/profile' ? 'active' : '' %>">
+        <a class="nav-link" href="/profile" <%- activePage === '/profile' ? 'aria-current="page"' : '' %>>
+          <i class="ti-user menu-icon"></i>
+          <span class="menu-title">Profile</span>
+        </a>
+      </li>
+    <% } else { %>
+      <li class="nav-item <%= activePage === '/dashboard' ? 'active' : '' %>">
+        <a class="nav-link" href="/dashboard" <%- activePage === '/dashboard' ? 'aria-current="page"' : '' %>>
+          <i class="icon-grid menu-icon"></i>
+          <span class="menu-title">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/carding' ? 'active' : '' %>">
+        <a class="nav-link" href="/carding" <%- activePage === '/carding' ? 'aria-current="page"' : '' %>>
+          <i class="ti-credit-card menu-icon"></i>
+          <span class="menu-title">Get a card</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/card-top-up' ? 'active' : '' %>">
+        <a class="nav-link" href="/card-top-up" <%- activePage === '/card-top-up' ? 'aria-current="page"' : '' %>>
+          <i class="ti-wallet menu-icon"></i>
+          <span class="menu-title">Card top up</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/withdrawal' ? 'active' : '' %>">
+        <a class="nav-link" href="/withdrawal" <%- activePage === '/withdrawal' ? 'aria-current="page"' : '' %>>
+          <i class="ti-export menu-icon"></i>
+          <span class="menu-title">Crypto withdrawal</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/earnings' ? 'active' : '' %>">
+        <a class="nav-link" href="/earnings" <%- activePage === '/earnings' ? 'aria-current="page"' : '' %>>
+          <i class="icon-bar-graph menu-icon"></i>
+          <span class="menu-title">Cash back</span>
+        </a>
+      </li>
+      <li class="nav-item <%= activePage === '/profile' ? 'active' : '' %>">
+        <a class="nav-link" href="/profile" <%- activePage === '/profile' ? 'aria-current="page"' : '' %>>
+          <i class="ti-user menu-icon"></i>
+          <span class="menu-title">Profile</span>
+        </a>
+      </li>
+    <% } %>
+  </ul>
+</nav>

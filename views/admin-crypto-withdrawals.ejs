@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Crypto withdrawals | Cardsequel Admin</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/"><img src="/images/logofull.png" class="mr-2" alt="Cardsequel"></a>
+        <a class="navbar-brand brand-logo-mini" href="/"><img src="/images/logo-mini.png" alt="Cardsequel"></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" id="profileDropdown" aria-label="Account menu"><img src="/images/faces/user.png" alt="profile"></a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="/profile"><i class="ti-user text-primary"></i>Profile</a>
+              <a class="dropdown-item" href="/users/logout"><i class="ti-power-off text-primary"></i>Logout</a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas" aria-label="Open navigation"><span class="icon-menu"></span></button>
+      </div>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'admin'; var activePage = '/admin/crypto-withdrawals'; %>
+      <% include ./partials/dashboard-sidebar %>
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 grid-margin">
+              <h3 class="font-weight-bold">Crypto withdrawal requests</h3>
+              <h6 class="font-weight-normal mb-0">Verify the request and destination before approving. Approval deducts the USD amount; then complete the crypto transfer to the listed wallet.</h6>
+            </div>
+          </div>
+          <% if (success_msg && success_msg.length) { %><div class="alert alert-success" role="status"><%= success_msg[0] %></div><% } %>
+          <% if (error_msg && error_msg.length) { %><div class="alert alert-danger" role="alert"><%= error_msg[0] %></div><% } %>
+
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Latest 100 requests</h4>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr><th>Submitted</th><th>User</th><th>Amount (USD)</th><th>Asset</th><th>Network</th><th>Destination wallet</th><th>Status</th><th>Review</th></tr>
+                      </thead>
+                      <tbody>
+                        <% if (requests.length) { %>
+                          <% requests.forEach(request => { %>
+                            <tr>
+                              <td><%= new Date(request.createdAt).toLocaleString() %></td>
+                              <td><%= request.user ? `${request.user.first_name} ${request.user.last_name} (${request.user.email})` : 'Account unavailable' %></td>
+                              <td>$<%= Number(request.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                              <td><%= request.asset %></td>
+                              <td><%= request.network %></td>
+                              <td class="text-break"><%= request.walletAddress %></td>
+                              <td><label class="badge <%= request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning' %>"><%= request.status %></label></td>
+                              <td>
+                                <% if (request.status === 'pending' && request.user) { %>
+                                  <form method="post" action="/admin/crypto-withdrawals/<%= encodeURIComponent(request._id) %>/approve" class="mb-1">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button class="btn btn-sm btn-success" type="submit">Approve &amp; debit</button>
+                                  </form>
+                                  <form method="post" action="/admin/crypto-withdrawals/<%= encodeURIComponent(request._id) %>/reject">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                                  </form>
+                                <% } else if (request.reviewedAt) { %>
+                                  <span><%= new Date(request.reviewedAt).toLocaleString() %></span>
+                                <% } else { %>
+                                  <span>—</span>
+                                <% } %>
+                              </td>
+                            </tr>
+                          <% }); %>
+                        <% } else { %>
+                          <tr><td colspan="8" class="text-center">No crypto withdrawal requests have been submitted.</td></tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+  <% include ./partials/chat %>
+</body>
+</html>
