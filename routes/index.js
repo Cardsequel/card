@@ -14,6 +14,32 @@ const { isValidWalletAddress } = require('../assets/js/crypto-address-validation
 const { normalizeAmount, parseAmount } = require('../utils/amounts');
 const { ensureAuthenticated, ensureAdmin, forwardAuthenticated } = require('../config/auth');
 
+const publicPaths = [
+  '/',
+  '/about',
+  '/wallet',
+  '/card',
+  '/term-and-condition',
+  '/privacy-policy',
+  '/refund-policy'
+];
+
+function escapeXml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+router.use((req, res, next) => {
+  if (publicPaths.includes(req.path) || req.path === '/llms.txt') {
+    res.removeHeader('X-Robots-Tag');
+  }
+  next();
+});
+
 function getPaymentWalletSettings() {
   return PaymentWalletSettings.findById('primary')
     .lean()
@@ -103,6 +129,68 @@ function maskCardNumber(value) {
 
   return `•••• •••• •••• ${digits.slice(-4)}`;
 }
+
+router.get('/robots.txt', (req, res) => {
+  const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  res.type('text/plain').send([
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /admin',
+    'Disallow: /dashboard',
+    'Disallow: /profile',
+    'Disallow: /users/',
+    'Disallow: /checkout',
+    'Disallow: /card-top-up',
+    'Disallow: /withdrawal',
+    'Disallow: /earnings',
+    'Disallow: /history',
+    'Disallow: /carding',
+    'Disallow: /deposit-success',
+    'Disallow: /withdrawal-success',
+    'Disallow: /select-coin-',
+    'Disallow: /bit-pay',
+    'Disallow: /ether-pay',
+    'Disallow: /usdt-',
+    'Disallow: /ltc-pay',
+    `Sitemap: ${siteUrl}/sitemap.xml`,
+    ''
+  ].join('\n'));
+});
+
+router.get('/sitemap.xml', (req, res) => {
+  const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  const urls = publicPaths.map(route => (
+    `  <url><loc>${escapeXml(`${siteUrl}${route}`)}</loc></url>`
+  ));
+  res
+    .type('application/xml')
+    .send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`);
+});
+
+router.get('/llms.txt', (req, res) => {
+  const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  res.type('text/plain').send([
+    '# Cardsequel',
+    '',
+    '> Cardsequel provides online-wallet cash card services. Its public pages describe card features, wallet options, account activation, and policies.',
+    '',
+    '## Public pages',
+    '',
+    `- [Home](${siteUrl}/): Overview of Cardsequel and its online-wallet cash cards.`,
+    `- [Cards](${siteUrl}/card): Card options, features, and how to get started.`,
+    `- [Wallet](${siteUrl}/wallet): Information about wallet options.`,
+    `- [About](${siteUrl}/about): Company and service information.`,
+    `- [Privacy policy](${siteUrl}/privacy-policy): Privacy terms.`,
+    `- [Refund policy](${siteUrl}/refund-policy): Refund terms.`,
+    `- [Terms and conditions](${siteUrl}/term-and-condition): Service terms.`,
+    '',
+    '## Content guidance',
+    '',
+    '- Use the linked public pages as the source of truth; do not infer product terms that are not stated there.',
+    '- Account, dashboard, payment, and user-specific pages are private and are not public product information.',
+    ''
+  ].join('\n'));
+});
 
 // Welcome Page
 router.get('/', forwardAuthenticated, (req, res) => res.render('welcome'));

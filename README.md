@@ -18,6 +18,25 @@ $ npm run dev
 # Visit http://localhost:5000
 ```
 
+### Search engine indexing
+
+The public marketing pages have canonical URLs and page-specific search and social
+metadata. The app serves `/robots.txt`, `/sitemap.xml`, and `/llms.txt` to help
+search engines and AI systems discover public information. The sitemap and
+`/llms.txt` contain only public pages, while account and dashboard routes are marked `noindex`.
+The `/contact` route currently has no page content, so it remains `noindex` and
+is excluded from the sitemap until contact information is added.
+
+Set `SITE_URL` to the site's public origin in production so canonical URLs, the
+sitemap, and `/llms.txt` use the deployment's preferred domain and protocol:
+
+```sh
+SITE_URL=https://example.com npm start
+```
+
+If `SITE_URL` is unset, the current request origin is used. Do not include a
+path, query string, or fragment in `SITE_URL`.
+
 ### MongoDB
 
 Open "config/keys.js" and add your MongoDB URI, local or Atlas

@@ -9,6 +9,26 @@ const { ensureAuthenticated } = require('./config/auth');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'assets')));
+
+if (process.env.SITE_URL) {
+  const configuredSiteUrl = new URL(process.env.SITE_URL);
+  if (
+    !['http:', 'https:'].includes(configuredSiteUrl.protocol) ||
+    configuredSiteUrl.pathname !== '/' ||
+    configuredSiteUrl.search ||
+    configuredSiteUrl.hash
+  ) {
+    throw new Error('SITE_URL must be an http(s) origin, such as https://example.com');
+  }
+  app.locals.siteUrl = configuredSiteUrl.origin;
+}
+
+app.use((req, res, next) => {
+  res.locals.siteUrl = app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 // Passport Config
 require('./config/passport')(passport);
 
