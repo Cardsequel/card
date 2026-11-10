@@ -130,6 +130,10 @@ function maskCardNumber(value) {
   return `•••• •••• •••• ${digits.slice(-4)}`;
 }
 
+function hasIssuedCard(value) {
+  return String(value || '').replace(/\D/g, '').length >= 4;
+}
+
 router.get('/robots.txt', (req, res) => {
   const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
   res.type('text/plain').send([
@@ -249,10 +253,18 @@ router.get('/dashboard', ensureAuthenticated, (req, res) => {
 });
 
 router.get('/card-top-up', ensureAuthenticated, (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  if (!hasIssuedCard(req.user.cardnumber)) {
+    return res.render('card-top-up', {
+      user: req.user,
+      requests: [],
+      hasCard: false
+    });
+  }
+
   if (!req.session.topUpToken) {
     req.session.topUpToken = crypto.randomBytes(32).toString('hex');
   }
-  res.set('Cache-Control', 'no-store');
   return TopUpRequest.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .limit(20)
@@ -261,6 +273,7 @@ router.get('/card-top-up', ensureAuthenticated, (req, res, next) => {
     .then(requests => res.render('card-top-up', {
       user: req.user,
       requests,
+      hasCard: true,
       csrfToken: req.session.topUpToken
     }))
     .catch(next);
@@ -354,6 +367,10 @@ router.post('/withdrawal', ensureAuthenticated, async (req, res, next) => {
 });
 
 router.post('/card-top-up', ensureAuthenticated, (req, res, next) => {
+  if (!hasIssuedCard(req.user.cardnumber)) {
+    return res.redirect('/card-top-up');
+  }
+
   const body = req.body || {};
   const suppliedToken = body._csrf;
   const storedToken = req.session.topUpToken;
@@ -791,11 +808,23 @@ router.get('/admin/users/:id/edit', ensureAdmin, (req, res, next) => {
 
   User.findById(req.params.id)
     .select('-password -password2')
+    .lean()
     .exec()
     .then(account => {
       if (!account) {
         return res.status(404).render('notfound-page');
       }
+
+      const accountForForm = {
+        ...account,
+        category: account.category || 'user',
+        availbalance: account.availbalance == null ? 0 : account.availbalance,
+        activedeposit: account.activedeposit == null ? 0 : account.activedeposit,
+        activeinvestment: account.activeinvestment == null ? 0 : account.activeinvestment,
+        cashback: account.cashback == null ? 0 : account.cashback,
+        todaysspending: account.todaysspending == null ? 0 : account.todaysspending,
+        date: account.date || account._id.getTimestamp()
+      };
 
       if (!req.session.adminEditToken) {
         req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
@@ -803,7 +832,7 @@ router.get('/admin/users/:id/edit', ensureAdmin, (req, res, next) => {
       res.set('Cache-Control', 'no-store');
       return res.render('admin-edit-user', {
         user: req.user,
-        account,
+        account: accountForForm,
         csrfToken: req.session.adminEditToken
       });
     })
@@ -911,6 +940,8 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
   }
 
   User.findById(req.params.id)
+    .select('category')
+    .lean()
     .then(account => {
       if (!account) {
         return res.status(404).render('notfound-page');
@@ -919,63 +950,66 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
       return User.findOne({
         email: values.email,
         _id: { $ne: account._id }
-      }).then(existingAccount => {
-        if (existingAccount) {
-          req.flash('error_msg', 'Another account already uses that email address.');
-          return res.redirect(accountUrl);
-        }
+      })
+        .select('_id')
+        .lean()
+        .then(existingAccount => {
+          if (existingAccount) {
+            req.flash('error_msg', 'Another account already uses that email address.');
+            return res.redirect(accountUrl);
+          }
 
-        const saveAccount = () => {
-          Object.assign(account, {
-            first_name: values.first_name,
-            last_name: values.last_name,
-            email: values.email,
-            wallet: values.wallet,
-            category: values.category,
-            code: values.code,
-            referalcode: values.referalcode,
-            availbalance: parsedAmounts.availbalance,
-            activedeposit: parsedAmounts.activedeposit,
-            activeinvestment: parsedAmounts.activeinvestment,
-            cashback: parsedAmounts.cashback,
-            todaysspending: spending,
-            cardnumber: values.cardnumber,
-            CVV: values.CVV,
-            expirydate: values.expirydate,
-            date: registrationDate
-          });
+          const saveAccount = () => {
+            const changes = {
+              first_name: values.first_name,
+              last_name: values.last_name,
+              email: values.email,
+              wallet: values.wallet,
+              category: values.category,
+              code: values.code,
+              referalcode: values.referalcode,
+              availbalance: parsedAmounts.availbalance,
+              activedeposit: parsedAmounts.activedeposit,
+              activeinvestment: parsedAmounts.activeinvestment,
+              cashback: parsedAmounts.cashback,
+              todaysspending: spending,
+              cardnumber: values.cardnumber,
+              CVV: values.CVV,
+              expirydate: values.expirydate,
+              date: registrationDate
+            };
+            const passwordHash = typeof newPassword === 'string' && newPassword !== ''
+              ? bcrypt.hash(newPassword, 10)
+              : Promise.resolve(null);
 
-          return account.save().then(() => {
-            req.flash('success_msg', 'Account updated successfully.');
-            req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
-            return res.redirect('/admin');
-          });
-        };
-
-        const saveWithPasswordReset = () => {
-          if (typeof newPassword === 'string' && newPassword !== '') {
-            return bcrypt.hash(newPassword, 10)
+            return passwordHash
               .then(hash => {
-                account.password = hash;
+                if (hash) changes.password = hash;
+                return User.updateOne({ _id: account._id }, { $set: changes }).exec();
+              })
+              .then(updateResult => {
+                if (updateResult.n !== 1) {
+                  return res.status(404).render('notfound-page');
+                }
+                req.flash('success_msg', 'Account updated successfully.');
+                req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
+                return res.redirect('/admin');
+              });
+          };
+
+          if (account.category === 'admin' && values.category !== 'admin') {
+            return User.countDocuments({ category: 'admin', _id: { $ne: account._id } })
+              .then(otherAdmins => {
+                if (otherAdmins === 0) {
+                  req.flash('error_msg', 'The last administrator account cannot be changed to a standard account.');
+                  return res.redirect(accountUrl);
+                }
                 return saveAccount();
               });
           }
+
           return saveAccount();
-        };
-
-        if (account.category === 'admin' && values.category !== 'admin') {
-          return User.countDocuments({ category: 'admin', _id: { $ne: account._id } })
-            .then(otherAdmins => {
-              if (otherAdmins === 0) {
-                req.flash('error_msg', 'The last administrator account cannot be changed to a standard account.');
-                return res.redirect(accountUrl);
-              }
-              return saveWithPasswordReset();
-            });
-        }
-
-        return saveWithPasswordReset();
-      });
+        });
     })
     .catch(next);
 });

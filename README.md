@@ -60,6 +60,9 @@ Balance fields now use MongoDB numbers. The migration scans existing accounts an
 converts formatted text such as `1,234.56` or `$1,234.56`. Back up the database, then
 run a dry run:
 
+Admins can also open and edit legacy formatted balances from the Accounts page
+without running this migration first; saving converts the edited balances to numbers.
+
 ```sh
 npm run migrate:user-balances
 ```

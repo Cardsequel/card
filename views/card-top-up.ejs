@@ -55,74 +55,88 @@
             <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
           <% } %>
 
-          <div class="row">
-            <div class="col-lg-6 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Request a top up</h4>
-                  <p class="card-description">Enter the amount and, if available, the payment transaction reference.</p>
-                  <form class="forms-sample" method="post" action="/card-top-up">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <div class="form-group">
-                      <label for="amount">Amount</label>
-                      <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text">$</span></div>
-                        <input class="form-control" id="amount" name="amount" type="number" min="0.01" max="999999999999" step="0.01" required>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label for="paymentReference">Payment reference (optional)</label>
-                      <input class="form-control" id="paymentReference" name="paymentReference" type="text" maxlength="120" autocomplete="off">
-                      <small class="form-text text-muted">Add a transaction reference so an admin can match your payment.</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary mr-2">Submit top-up request</button>
-                    <a href="/dashboard" class="btn btn-light">Cancel</a>
-                  </form>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-6 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Your available balance</h4>
-                  <p class="fs-30 mb-2">$<%= Number(user.availbalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
-                  <p class="card-description">Pending requests do not change your balance.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-12 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Your top-up requests</h4>
-                  <div class="table-responsive">
-                    <table class="table table-hover">
-                      <thead>
-                        <tr><th>Submitted</th><th>Amount</th><th>Payment reference</th><th>Status</th></tr>
-                      </thead>
-                      <tbody>
-                        <% if (requests.length) { %>
-                          <% requests.forEach(request => { %>
-                            <tr>
-                              <td><%= new Date(request.createdAt).toLocaleString() %></td>
-                              <td>$<%= Number(request.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
-                              <td><%= request.paymentReference || '—' %></td>
-                              <td><label class="badge <%= request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning' %>"><%= request.status %></label></td>
-                            </tr>
-                          <% }); %>
-                        <% } else { %>
-                          <tr><td colspan="4" class="text-center">You have not submitted a top-up request yet.</td></tr>
-                        <% } %>
-                      </tbody>
-                    </table>
+          <% if (!hasCard) { %>
+            <div class="row">
+              <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Get a card before topping up</h4>
+                    <p class="card-description">You need an active card to submit a top-up request. Choose and buy a card to get started.</p>
+                    <a href="/carding" class="btn btn-primary">Buy a card</a>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          <% } else { %>
+            <div class="row">
+              <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Request a top up</h4>
+                    <p class="card-description">Enter the amount and, if available, the payment transaction reference.</p>
+                    <form class="forms-sample" method="post" action="/card-top-up">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                          <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                          <input class="form-control" id="amount" name="amount" type="number" min="0.01" max="999999999999" step="0.01" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="paymentReference">Payment reference (optional)</label>
+                        <input class="form-control" id="paymentReference" name="paymentReference" type="text" maxlength="120" autocomplete="off">
+                        <small class="form-text text-muted">Add a transaction reference so an admin can match your payment.</small>
+                      </div>
+                      <button type="submit" class="btn btn-primary mr-2">Submit top-up request</button>
+                      <a href="/dashboard" class="btn btn-light">Cancel</a>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Your available balance</h4>
+                    <p class="fs-30 mb-2">$<%= Number(user.availbalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+                    <p class="card-description">Pending requests do not change your balance.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Your top-up requests</h4>
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr><th>Submitted</th><th>Amount</th><th>Payment reference</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                          <% if (requests.length) { %>
+                            <% requests.forEach(request => { %>
+                              <tr>
+                                <td><%= new Date(request.createdAt).toLocaleString() %></td>
+                                <td>$<%= Number(request.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></td>
+                                <td><%= request.paymentReference || '—' %></td>
+                                <td><label class="badge <%= request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning' %>"><%= request.status %></label></td>
+                              </tr>
+                            <% }); %>
+                          <% } else { %>
+                            <tr><td colspan="4" class="text-center">You have not submitted a top-up request yet.</td></tr>
+                          <% } %>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
