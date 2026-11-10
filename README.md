@@ -50,6 +50,9 @@ request. The dashboard summarizes account counts and balances/activity, and admi
 can edit a user's profile, account category, balances, card details, and registration
 date from the Accounts page at `/admin`. Password resets are optional and stored as
 hashes; current passwords and password confirmations are never displayed.
+The dashboard and Accounts page count non-admin accounts created before October 18,
+2026 as V1, and those created on or after that date as V2. Accounts without a valid
+registration date are excluded from both counts.
 Dashboard money totals use decimal arithmetic and normalize dollar signs and thousands
 separators. Any remaining invalid account amounts are reported beside the totals
 instead of being silently counted as zero.

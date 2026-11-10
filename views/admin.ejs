@@ -67,7 +67,7 @@
           <div class="row">
             <div class="col-lg-12 col-md-12 grid-margin transparent">
               <div class="row">
-                <div class="col-md-4 mb-4 stretch-card transparent">
+                <div class="col-md-3 mb-4 stretch-card transparent">
                   <div class="card data-icon-card-primary">
                     <div class="card-body">
                       <p class="mb-4">Registered accounts</p>
@@ -75,7 +75,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-4 mb-4 stretch-card transparent">
+                <div class="col-md-3 mb-4 stretch-card transparent">
                   <div class="card data-icon-card-primary">
                     <div class="card-body">
                       <p class="mb-4">Administrators</p>
@@ -83,11 +83,19 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-4 mb-4 stretch-card transparent">
+                <div class="col-md-3 mb-4 stretch-card transparent">
                   <div class="card card-inverse-success">
                     <div class="card-body">
                       <p class="mb-4">V1 accounts</p>
-                      <p class="fs-30 mb-2"><%= users.filter(account => account.category !== 'admin').length %></p>
+                      <p class="fs-30 mb-2"><%= v1Accounts %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-4 stretch-card transparent">
+                  <div class="card data-icon-card-primary">
+                    <div class="card-body">
+                      <p class="mb-4">V2 accounts</p>
+                      <p class="fs-30 mb-2"><%= v2Accounts %></p>
                     </div>
                   </div>
                 </div>

@@ -14,6 +14,8 @@ const { isValidWalletAddress } = require('../assets/js/crypto-address-validation
 const { normalizeAmount, parseAmount } = require('../utils/amounts');
 const { ensureAuthenticated, ensureAdmin, forwardAuthenticated } = require('../config/auth');
 
+const v1AccountCutoff = new Date('2026-10-18T00:00:00.000Z');
+
 const publicPaths = [
   '/',
   '/about',
@@ -132,6 +134,24 @@ function maskCardNumber(value) {
 
 function hasIssuedCard(value) {
   return String(value || '').replace(/\D/g, '').length >= 4;
+}
+
+function isV1Account(account) {
+  if (account.category === 'admin' || account.date == null) {
+    return false;
+  }
+
+  const createdAt = new Date(account.date);
+  return Number.isFinite(createdAt.getTime()) && createdAt < v1AccountCutoff;
+}
+
+function isV2Account(account) {
+  if (account.category === 'admin' || account.date == null) {
+    return false;
+  }
+
+  const createdAt = new Date(account.date);
+  return Number.isFinite(createdAt.getTime()) && createdAt >= v1AccountCutoff;
 }
 
 router.get('/robots.txt', (req, res) => {
@@ -480,6 +500,14 @@ router.get('/admin-dashboard', ensureAdmin, (req, res, next) => {
       }
     };
   }
+  const v1AccountDate = {
+    $convert: {
+      input: '$date',
+      to: 'date',
+      onError: null,
+      onNull: null
+    }
+  };
 
   Promise.all([
     User.aggregate([
@@ -492,7 +520,34 @@ router.get('/admin-dashboard', ensureAdmin, (req, res, next) => {
             $sum: { $cond: [{ $eq: ['$category', 'admin'] }, 1, 0] }
           },
           standardAccounts: {
-            $sum: { $cond: [{ $ne: ['$category', 'admin'] }, 1, 0] }
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$category', 'admin'] },
+                    { $ne: [v1AccountDate, null] },
+                    { $lt: [v1AccountDate, v1AccountCutoff] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          v2Accounts: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$category', 'admin'] },
+                    { $ne: [v1AccountDate, null] },
+                    { $gte: [v1AccountDate, v1AccountCutoff] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
           },
           availableBalance: { $sum: '$__adminAmounts.availableBalance' },
           activeDeposits: { $sum: '$__adminAmounts.activeDeposits' },
@@ -515,6 +570,7 @@ router.get('/admin-dashboard', ensureAdmin, (req, res, next) => {
         totalAccounts: 0,
         adminAccounts: 0,
         standardAccounts: 0,
+        v2Accounts: 0,
         availableBalance: 0,
         activeDeposits: 0,
         activeInvestments: 0,
@@ -551,7 +607,12 @@ router.get('/admin', ensureAdmin, (req, res, next) => {
     .sort({ date: -1 })
     .lean()
     .exec()
-    .then(users => res.render('admin', { user: req.user, users }))
+    .then(users => res.render('admin', {
+      user: req.user,
+      users,
+      v1Accounts: users.filter(isV1Account).length,
+      v2Accounts: users.filter(isV2Account).length
+    }))
     .catch(next);
 });
 
