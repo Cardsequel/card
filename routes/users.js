@@ -6,6 +6,7 @@ const passport = require('passport');
 // Load User model
 const User = require('../models/User');
 const UnsubscribedEmail = require('../models/UnsubscribedEmail');
+const UnsubscribeToken = require('../models/UnsubscribeToken');
 const { forwardAuthenticated } = require('../config/auth');
 
 function isValidCsrfToken(suppliedToken, storedToken) {
@@ -18,6 +19,54 @@ function isValidCsrfToken(suppliedToken, storedToken) {
   );
 }
 
+function decodeBase64Url(value) {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    return null;
+  }
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+  return Buffer.from(base64, 'base64');
+}
+
+function getSignedUnsubscribeEmail(token) {
+  const match = /^v1\.([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]{43})$/.exec(token);
+  if (!match || match[1].length > 2048) {
+    return null;
+  }
+
+  const secret = process.env.UNSUBSCRIBE_SECRET || '';
+  if (secret.length < 32 || /[\r\n\0]/.test(secret)) {
+    throw new Error('UNSUBSCRIBE_SECRET must be configured with at least 32 characters.');
+  }
+
+  const expectedSignature = crypto.createHmac('sha256', secret)
+    .update(match[1])
+    .digest();
+  const suppliedSignature = decodeBase64Url(match[2]);
+  if (
+    !suppliedSignature ||
+    suppliedSignature.length !== expectedSignature.length ||
+    !crypto.timingSafeEqual(suppliedSignature, expectedSignature)
+  ) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(decodeBase64Url(match[1]).toString('utf8'));
+    if (
+      !payload ||
+      typeof payload.email !== 'string' ||
+      payload.email.length > 254 ||
+      /[\r\n]/.test(payload.email) ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)
+    ) {
+      return null;
+    }
+    return payload.email;
+  } catch (error) {
+    return null;
+  }
+}
+
 // Login Page
 router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
 
@@ -28,21 +77,39 @@ router.get('/unsubscribe/:token', async (req, res, next) => {
   const { token } = req.params;
   res.set('Cache-Control', 'no-store');
   res.set('Referrer-Policy', 'no-referrer');
-  if (!/^[a-f0-9]{64}$/.test(token)) {
+  const isSignedToken = token.startsWith('v1.');
+  if (!isSignedToken && !/^[a-f0-9]{64}$/.test(token)) {
     return res.status(400).render('unsubscribe', { unsubscribed: false });
   }
 
-  const unsubscribeTokenHash = crypto.createHash('sha256').update(token).digest('hex');
   try {
-    const account = await User.findOne({ unsubscribeTokenHashes: unsubscribeTokenHash })
-      .select('email')
-      .lean()
-      .exec();
-    if (!account || typeof account.email !== 'string') {
+    let account = null;
+    let campaignToken;
+    let email;
+    if (isSignedToken) {
+      email = getSignedUnsubscribeEmail(token);
+    } else {
+      const unsubscribeTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      account = await User.findOne({ unsubscribeTokenHashes: unsubscribeTokenHash })
+        .select('email')
+        .lean()
+        .exec();
+      if (account) {
+        email = account.email;
+      } else {
+        campaignToken = await UnsubscribeToken.findOne({ tokenHash: unsubscribeTokenHash })
+          .select('email')
+          .lean()
+          .exec();
+        email = campaignToken && campaignToken.email;
+      }
+    }
+
+    if (typeof email !== 'string') {
       return res.status(400).render('unsubscribe', { unsubscribed: false });
     }
 
-    const email = account.email.trim();
+    email = email.trim();
     if (
       email.length > 254 ||
       /[\r\n]/.test(email) ||
@@ -63,10 +130,14 @@ router.get('/unsubscribe/:token', async (req, res, next) => {
       }
     }
 
-    await User.updateOne(
-      { _id: account._id },
-      { $set: { unsubscribeTokenHashes: [] } }
-    ).exec();
+    if (account) {
+      await User.updateOne(
+        { _id: account._id },
+        { $set: { unsubscribeTokenHashes: [] } }
+      ).exec();
+    } else if (campaignToken) {
+      await UnsubscribeToken.deleteOne({ _id: campaignToken._id }).exec();
+    }
 
     return res.render('unsubscribe', { unsubscribed: true });
   } catch (error) {

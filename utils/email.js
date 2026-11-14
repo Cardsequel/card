@@ -93,7 +93,10 @@ function createTransporter(smtpConfig) {
 async function sendEmail({ smtpConfig, to, subject, html, text }) {
   const transporter = createTransporter(smtpConfig);
   return transporter.sendMail({
-    from: smtpConfig.email,
+    from: {
+      name: 'Cardsequel',
+      address: smtpConfig.email
+    },
     to,
     subject,
     html,
@@ -138,6 +141,7 @@ function sendPasswordResetEmail(account, resetUrl, smtpConfig) {
 module.exports = {
   validateSmtpConfig,
   validateSiteUrl,
+  createTransporter,
   sendWelcomeEmail,
   sendPasswordResetEmail
 };

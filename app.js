@@ -8,6 +8,7 @@ const session = require('express-session');
 const { ensureAuthenticated } = require('./config/auth');
 
 const app = express();
+app.locals.siteUrl = 'https://cardsequel.cc';
 app.use(express.static(path.join(__dirname, 'assets')));
 
 if (process.env.SITE_URL) {

@@ -208,7 +208,7 @@
                   </div>
                   <div class="modal-body">
                     <p class="text-muted">Recipient: <%= account.first_name %> <%= account.last_name %> (<%= account.email %>)</p>
-                    <p class="small">The SMTP email is used as both the login and sender address. Credentials are only used for this message and are not saved.</p>
+                    <p class="small">Emails will appear from Cardsequel, using the SMTP email as the sender address. Credentials are only used for this message and are not saved.</p>
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <input type="hidden" name="search" value="<%= searchQuery %>">
                     <input type="hidden" id="smtp-email-type" name="emailType" value="">

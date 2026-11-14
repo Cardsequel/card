@@ -31,11 +31,11 @@ Set `SITE_URL` to the site's public origin in production so canonical URLs, the
 sitemap, and `/llms.txt` use the deployment's preferred domain and protocol:
 
 ```sh
-SITE_URL=https://example.com npm start
+SITE_URL=https://cardsequel.cc npm start
 ```
 
-If `SITE_URL` is unset, the current request origin is used. Do not include a
-path, query string, or fragment in `SITE_URL`.
+If `SITE_URL` is unset, the app defaults to `https://cardsequel.cc`. Do not
+include a path, query string, or fragment in `SITE_URL`.
 
 ### Admin email
 
@@ -44,15 +44,44 @@ and secure-connection setting in the send-email popup. Credentials are used
 only for that message and are not saved. Select TLS for implicit TLS (commonly
 port 465) or STARTTLS (commonly port 587). Set `SITE_URL` in the server
 environment to prefill the public site origin in the email popup, or enter the
-public site URL in the popup for the reset and unsubscribe links.
+public site URL in the popup for the reset and unsubscribe links. The popup
+defaults to `https://cardsequel.cc`.
 Administrators can manually send either the
 welcome email or a password-reset link to a selected account. Welcome emails are
-not sent automatically at registration. Reset links expire after one hour and
+not sent automatically at registration. Reset links expire after 24 hours and
 can be used once; only a hash of each reset token is stored.
 The welcome email's unsubscribe link saves the address to the promotional
 suppression list in MongoDB. Unsubscribed addresses are not sent further welcome
 emails; password-reset emails remain available. Admins can download the saved
 addresses from the Accounts page as `unsubscribed-emails.txt`.
+
+To send a designed HTML campaign to a newline-separated recipient list, use:
+
+```sh
+export UNSUBSCRIBE_SECRET="$(openssl rand -hex 32)"
+# Configure this same secret in the live server environment.
+SMTP_HOST=smtp.example.com \
+SMTP_EMAIL=mailer@example.com \
+SMTP_PASSWORD='your-smtp-password' \
+SMTP_PORT=587 \
+SMTP_SECURE=false \
+UNSUBSCRIBE_SECRET="$UNSUBSCRIBE_SECRET" \
+SITE_URL=https://cardsequel.cc \
+npm run send:bulk-email -- recipients.txt email-design.html "Email subject"
+```
+
+The script sends one message per recipient and does not connect to MongoDB or
+import project-local files; it requires Node.js and the `nodemailer` package
+(already included when run from this project's installation). Remove any
+previously unsubscribed addresses from `recipients.txt` before sending.
+
+Include `{{UNSUBSCRIBE_URL}}` in the HTML design where the unsubscribe link
+should go; otherwise, an unsubscribe link is appended. The link uses the
+existing `/users/unsubscribe/:token` route and adds the address to the same
+suppression list used by welcome emails. Set `UNSUBSCRIBE_SECRET` to the same
+random secret of at least 32 characters on both the sending machine and the
+live server; the server needs it to verify campaign unsubscribe links. Keep
+SMTP credentials and this secret in environment variables, not source files.
 
 ### MongoDB
 
