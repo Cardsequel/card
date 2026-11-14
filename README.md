@@ -58,14 +58,14 @@ addresses from the Accounts page as `unsubscribed-emails.txt`.
 To send a designed HTML campaign to a newline-separated recipient list, use:
 
 ```sh
-export UNSUBSCRIBE_SECRET="$(openssl rand -hex 32)"
-# Configure this same secret in the live server environment.
+export BULK_EMAIL_API_KEY="$(openssl rand -hex 32)"
+# Configure this same API key in the live server environment first.
 SMTP_HOST=smtp.example.com \
 SMTP_EMAIL=mailer@example.com \
 SMTP_PASSWORD='your-smtp-password' \
 SMTP_PORT=587 \
 SMTP_SECURE=false \
-UNSUBSCRIBE_SECRET="$UNSUBSCRIBE_SECRET" \
+BULK_EMAIL_API_KEY="$BULK_EMAIL_API_KEY" \
 SITE_URL=https://cardsequel.cc \
 npm run send:bulk-email -- recipients.txt email-design.html "Email subject"
 ```
@@ -78,10 +78,12 @@ previously unsubscribed addresses from `recipients.txt` before sending.
 Include `{{UNSUBSCRIBE_URL}}` in the HTML design where the unsubscribe link
 should go; otherwise, an unsubscribe link is appended. The link uses the
 existing `/users/unsubscribe/:token` route and adds the address to the same
-suppression list used by welcome emails. Set `UNSUBSCRIBE_SECRET` to the same
-random secret of at least 32 characters on both the sending machine and the
-live server; the server needs it to verify campaign unsubscribe links. Keep
-SMTP credentials and this secret in environment variables, not source files.
+suppression list used by welcome emails. The sender requests stored tokens from
+the protected `/users/api/unsubscribe-token` endpoint; the server checks its
+suppression list and skips addresses already unsubscribed. Set
+`BULK_EMAIL_API_KEY` to the same random key of at least 32 characters on the
+sending machine and live server. Keep SMTP credentials and the API key in
+environment variables, not source files.
 
 ### MongoDB
 

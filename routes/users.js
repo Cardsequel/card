@@ -67,11 +67,68 @@ function getSignedUnsubscribeEmail(token) {
   }
 }
 
+function isValidBulkEmailApiKey(suppliedKey, configuredKey) {
+  if (
+    typeof suppliedKey !== 'string' ||
+    typeof configuredKey !== 'string' ||
+    configuredKey.length < 32 ||
+    configuredKey.length > 1024 ||
+    /[\r\n\0]/.test(configuredKey)
+  ) {
+    return false;
+  }
+
+  const supplied = Buffer.from(suppliedKey);
+  const configured = Buffer.from(configuredKey);
+  return supplied.length === configured.length && crypto.timingSafeEqual(supplied, configured);
+}
+
 // Login Page
 router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
 
 // Register Page
 router.get('/register', forwardAuthenticated, (req, res) => res.render('register'));
+
+router.post('/api/unsubscribe-token', async (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  const authorization = req.get('Authorization') || '';
+  if (!isValidBulkEmailApiKey(
+    authorization.startsWith('Bearer ') ? authorization.slice(7) : '',
+    process.env.BULK_EMAIL_API_KEY
+  )) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+  if (
+    email.length > 254 ||
+    /[\r\n]/.test(email) ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ) {
+    return res.status(400).json({ error: 'Enter a valid email address.' });
+  }
+
+  try {
+    const normalizedEmail = email.toLowerCase();
+    const existingUnsubscribe = await UnsubscribedEmail.findOne({ normalizedEmail })
+      .select('_id')
+      .lean()
+      .exec();
+    if (existingUnsubscribe) {
+      return res.status(409).json({ alreadyUnsubscribed: true });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    await UnsubscribeToken.create({ tokenHash, email });
+    const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+    return res.json({
+      unsubscribeUrl: `${siteUrl}/users/unsubscribe/${token}`
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 router.get('/unsubscribe/:token', async (req, res, next) => {
   const { token } = req.params;
