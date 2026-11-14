@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "send:bulk-email": "node scripts/send-bulk-email.js",
     "migrate:user-balances": "node scripts/migrate-user-balances.js"
   },
   "keywords": [],

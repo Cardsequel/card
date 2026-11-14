@@ -141,7 +141,6 @@ function sendPasswordResetEmail(account, resetUrl, smtpConfig) {
 module.exports = {
   validateSmtpConfig,
   validateSiteUrl,
-  createTransporter,
   sendWelcomeEmail,
   sendPasswordResetEmail
 };

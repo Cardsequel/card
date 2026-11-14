@@ -48,42 +48,12 @@ public site URL in the popup for the reset and unsubscribe links. The popup
 defaults to `https://cardsequel.cc`.
 Administrators can manually send either the
 welcome email or a password-reset link to a selected account. Welcome emails are
-not sent automatically at registration. Reset links expire after 24 hours and
+not sent automatically at registration. Reset links expire after one hour and
 can be used once; only a hash of each reset token is stored.
 The welcome email's unsubscribe link saves the address to the promotional
 suppression list in MongoDB. Unsubscribed addresses are not sent further welcome
 emails; password-reset emails remain available. Admins can download the saved
 addresses from the Accounts page as `unsubscribed-emails.txt`.
-
-To send a designed HTML campaign to a newline-separated recipient list, use:
-
-```sh
-export BULK_EMAIL_API_KEY="$(openssl rand -hex 32)"
-# Configure this same API key in the live server environment first.
-SMTP_HOST=smtp.example.com \
-SMTP_EMAIL=mailer@example.com \
-SMTP_PASSWORD='your-smtp-password' \
-SMTP_PORT=587 \
-SMTP_SECURE=false \
-BULK_EMAIL_API_KEY="$BULK_EMAIL_API_KEY" \
-SITE_URL=https://cardsequel.cc \
-npm run send:bulk-email -- recipients.txt email-design.html "Email subject"
-```
-
-The script sends one message per recipient and does not connect to MongoDB or
-import project-local files; it requires Node.js and the `nodemailer` package
-(already included when run from this project's installation). Remove any
-previously unsubscribed addresses from `recipients.txt` before sending.
-
-Include `{{UNSUBSCRIBE_URL}}` in the HTML design where the unsubscribe link
-should go; otherwise, an unsubscribe link is appended. The link uses the
-existing `/users/unsubscribe/:token` route and adds the address to the same
-suppression list used by welcome emails. The sender requests stored tokens from
-the protected `/users/api/unsubscribe-token` endpoint; the server checks its
-suppression list and skips addresses already unsubscribed. Set
-`BULK_EMAIL_API_KEY` to the same random key of at least 32 characters on the
-sending machine and live server. Keep SMTP credentials and the API key in
-environment variables, not source files.
 
 ### MongoDB
 

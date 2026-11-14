@@ -727,7 +727,7 @@ router.post('/admin/users/:id/send-email', ensureAdmin, async (req, res, next) =
   } else {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
     try {
       const updateResult = await User.updateOne(
         { _id: account._id },
