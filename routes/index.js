@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const UnsubscribedEmail = require('../models/UnsubscribedEmail');
 const TopUpRequest = require('../models/TopUpRequest');
 const CryptoWithdrawalRequest = require('../models/CryptoWithdrawalRequest');
 const PaymentWalletSettings = require('../models/PaymentWalletSettings');
@@ -12,6 +13,12 @@ const { paymentWallets, defaultPaymentWalletAddresses } = require('../utils/paym
 const { createPaymentQr } = require('../utils/payment-qr');
 const { isValidWalletAddress } = require('../assets/js/crypto-address-validation');
 const { normalizeAmount, parseAmount } = require('../utils/amounts');
+const {
+  validateSmtpConfig,
+  validateSiteUrl,
+  sendWelcomeEmail,
+  sendPasswordResetEmail
+} = require('../utils/email');
 const { ensureAuthenticated, ensureAdmin, forwardAuthenticated } = require('../config/auth');
 
 const v1AccountCutoff = new Date('2026-10-18T00:00:00.000Z');
@@ -607,12 +614,170 @@ router.get('/admin', ensureAdmin, (req, res, next) => {
     .sort({ date: -1 })
     .lean()
     .exec()
-    .then(users => res.render('admin', {
-      user: req.user,
-      users,
-      v1Accounts: users.filter(isV1Account).length,
-      v2Accounts: users.filter(isV2Account).length
-    }))
+    .then(allUsers => {
+      const searchQuery = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const normalizedQuery = searchQuery.toLowerCase();
+      const users = normalizedQuery
+        ? allUsers.filter(account => (
+          `${account.first_name} ${account.last_name} ${account.email}`
+            .toLowerCase()
+            .includes(normalizedQuery)
+        ))
+        : allUsers;
+
+      if (!req.session.adminMailToken) {
+        req.session.adminMailToken = crypto.randomBytes(32).toString('hex');
+      }
+      res.set('Cache-Control', 'no-store');
+      return res.render('admin', {
+        user: req.user,
+        allUsers,
+        users,
+        searchQuery,
+        csrfToken: req.session.adminMailToken,
+        v1Accounts: allUsers.filter(isV1Account).length,
+        v2Accounts: allUsers.filter(isV2Account).length
+      });
+    })
+    .catch(next);
+});
+
+router.post('/admin/users/:id/send-email', ensureAdmin, async (req, res, next) => {
+  const body = req.body || {};
+  const searchQuery = typeof body.search === 'string' ? body.search.trim() : '';
+  const accountUrl = `/admin/users/${encodeURIComponent(req.params.id)}/edit${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ''}`;
+  if (!isValidCsrfToken(body._csrf, req.session.adminEditToken)) {
+    req.flash('error_msg', 'Your email form expired. Reload the page and try again.');
+    return res.redirect(accountUrl);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(404).render('notfound-page');
+  }
+
+  const emailType = body.emailType;
+  if (emailType !== 'welcome' && emailType !== 'password-reset') {
+    req.flash('error_msg', 'Choose a valid email to send.');
+    return res.redirect(accountUrl);
+  }
+  let smtpConfig;
+  try {
+    smtpConfig = validateSmtpConfig(body);
+  } catch (error) {
+    req.flash('error_msg', error.message);
+    return res.redirect(accountUrl);
+  }
+  let siteUrl;
+  try {
+    siteUrl = validateSiteUrl(body.siteUrl);
+  } catch (error) {
+    req.flash('error_msg', error.message);
+    return res.redirect(accountUrl);
+  }
+
+  let account;
+  try {
+    account = await User.findById(req.params.id)
+      .select('first_name last_name email')
+      .lean()
+      .exec();
+  } catch (error) {
+    return next(error);
+  }
+  if (!account) {
+    return res.status(404).render('notfound-page');
+  }
+
+  if (emailType === 'welcome') {
+    try {
+      const normalizedEmail = account.email.trim().toLowerCase();
+      const unsubscribe = await UnsubscribedEmail.findOne({ normalizedEmail }).select('_id').lean().exec();
+      if (unsubscribe) {
+        req.flash('error_msg', `${account.email} has unsubscribed from promotional emails.`);
+        return res.redirect(accountUrl);
+      }
+
+      const unsubscribeToken = crypto.randomBytes(32).toString('hex');
+      const unsubscribeTokenHash = crypto.createHash('sha256').update(unsubscribeToken).digest('hex');
+      const updateResult = await User.updateOne(
+        { _id: account._id },
+        { $addToSet: { unsubscribeTokenHashes: unsubscribeTokenHash } }
+      ).exec();
+      if (updateResult.n !== 1) {
+        return res.status(404).render('notfound-page');
+      }
+
+      const unsubscribeUrl =
+        `${siteUrl}/users/unsubscribe/${unsubscribeToken}`;
+      try {
+        await sendWelcomeEmail(account, unsubscribeUrl, smtpConfig);
+      } catch (error) {
+        await User.updateOne(
+          { _id: account._id },
+          { $pull: { unsubscribeTokenHashes: unsubscribeTokenHash } }
+        ).exec();
+        throw error;
+      }
+      req.flash('success_msg', `Welcome email sent to ${account.email}.`);
+    } catch (error) {
+      console.error('Admin welcome email delivery failed:', error.message);
+      req.flash('error_msg', 'The welcome email could not be sent. Verify the SMTP details and try again.');
+      return res.redirect(accountUrl);
+    }
+  } else {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    try {
+      const updateResult = await User.updateOne(
+        { _id: account._id },
+        { $set: { passwordResetTokenHash: resetTokenHash, passwordResetExpires: expiresAt } }
+      ).exec();
+      if (updateResult.n !== 1) {
+        return res.status(404).render('notfound-page');
+      }
+    } catch (error) {
+      return next(error);
+    }
+
+    try {
+      await sendPasswordResetEmail(
+        account,
+        `${siteUrl}/users/reset-password/${resetToken}`,
+        smtpConfig
+      );
+      req.flash('success_msg', `Password-reset email sent to ${account.email}.`);
+    } catch (error) {
+      try {
+        await User.updateOne(
+          { _id: account._id, passwordResetTokenHash: resetTokenHash },
+          { $unset: { passwordResetTokenHash: 1, passwordResetExpires: 1 } }
+        ).exec();
+      } catch (cleanupError) {
+        return next(cleanupError);
+      }
+      console.error('Admin password-reset email delivery failed:', error.message);
+      req.flash('error_msg', 'The password-reset email could not be sent. Verify the SMTP details and try again.');
+      return res.redirect(accountUrl);
+    }
+  }
+
+  return res.redirect(accountUrl);
+});
+
+router.get('/admin/unsubscribed-emails.txt', ensureAdmin, (req, res, next) => {
+  UnsubscribedEmail.find({}, 'email')
+    .sort({ createdAt: 1 })
+    .lean()
+    .exec()
+    .then(records => {
+      const emails = records
+        .map(record => record.email)
+        .filter(email => typeof email === 'string' && !/[\r\n]/.test(email));
+      res.set('Cache-Control', 'no-store');
+      res.type('text/plain').attachment('unsubscribed-emails.txt');
+      return res.send(emails.length ? `${emails.join('\n')}\n` : '');
+    })
     .catch(next);
 });
 
@@ -894,6 +1059,8 @@ router.get('/admin/users/:id/edit', ensureAdmin, (req, res, next) => {
       return res.render('admin-edit-user', {
         user: req.user,
         account: accountForForm,
+        searchQuery: typeof req.query.search === 'string' ? req.query.search.trim() : '',
+        siteUrl: req.app.locals.siteUrl || '',
         csrfToken: req.session.adminEditToken
       });
     })
@@ -901,8 +1068,10 @@ router.get('/admin/users/:id/edit', ensureAdmin, (req, res, next) => {
 });
 
 router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
-  const accountUrl = `/admin/users/${encodeURIComponent(req.params.id)}/edit`;
   const body = req.body || {};
+  const searchQuery = typeof body.search === 'string' ? body.search.trim() : '';
+  const adminUrl = `/admin${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ''}`;
+  const accountUrl = `/admin/users/${encodeURIComponent(req.params.id)}/edit${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ''}`;
   const suppliedToken = body._csrf;
   const storedToken = req.session.adminEditToken;
   const validCsrfToken =
@@ -913,7 +1082,7 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
     crypto.timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(storedToken));
   if (!validCsrfToken) {
     req.flash('error_msg', 'Your edit session expired. Please try again.');
-    return res.redirect('/admin');
+    return res.redirect(adminUrl);
   }
 
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -1054,7 +1223,7 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
                 }
                 req.flash('success_msg', 'Account updated successfully.');
                 req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
-                return res.redirect('/admin');
+                return res.redirect(adminUrl);
               });
           };
 
@@ -1073,6 +1242,86 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
         });
     })
     .catch(next);
+});
+
+router.post('/admin/users/:id/delete', ensureAdmin, async (req, res, next) => {
+  const body = req.body || {};
+  const searchQuery = typeof body.search === 'string' ? body.search.trim() : '';
+  const adminUrl = `/admin${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ''}`;
+  if (!isValidCsrfToken(body._csrf, req.session.adminEditToken)) {
+    req.flash('error_msg', 'Your delete form expired. Reload the account page and try again.');
+    return res.redirect(adminUrl);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(404).render('notfound-page');
+  }
+
+  const accountId = new mongoose.Types.ObjectId(req.params.id);
+  const accountUrl = `/admin/users/${encodeURIComponent(accountId)}/edit${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ''}`;
+  if (String(accountId) === String(req.user._id || req.user.id)) {
+    req.flash('error_msg', 'You cannot delete the administrator account you are currently using.');
+    return res.redirect(accountUrl);
+  }
+
+  let session;
+  let transactionActive = false;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+    transactionActive = true;
+
+    const account = await User.findById(accountId).select('category').session(session).lean().exec();
+    if (!account) {
+      await session.abortTransaction();
+      transactionActive = false;
+      return res.status(404).render('notfound-page');
+    }
+
+    if (account.category === 'admin') {
+      const otherAdmins = await User.countDocuments({
+        category: 'admin',
+        _id: { $ne: accountId }
+      }).session(session);
+      if (otherAdmins === 0) {
+        await session.abortTransaction();
+        transactionActive = false;
+        req.flash('error_msg', 'The last administrator account cannot be deleted.');
+        return res.redirect(accountUrl);
+      }
+    }
+
+    await TopUpRequest.deleteMany({ user: accountId }, { session }).exec();
+    await CryptoWithdrawalRequest.deleteMany({ user: accountId }, { session }).exec();
+    await TopUpRequest.updateMany(
+      { reviewedBy: accountId },
+      { $unset: { reviewedBy: 1, reviewedAt: 1 } },
+      { session }
+    ).exec();
+    await CryptoWithdrawalRequest.updateMany(
+      { reviewedBy: accountId },
+      { $unset: { reviewedBy: 1, reviewedAt: 1 } },
+      { session }
+    ).exec();
+
+    const deleteResult = await User.deleteOne({ _id: accountId }, { session }).exec();
+    if (deleteResult.n !== 1) {
+      throw new Error('The account could not be deleted.');
+    }
+
+    await session.commitTransaction();
+    transactionActive = false;
+    req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
+    req.flash('success_msg', 'Account and its top-up and crypto-withdrawal records were deleted.');
+    return res.redirect(adminUrl);
+  } catch (error) {
+    if (session && transactionActive) {
+      await session.abortTransaction();
+    }
+    return next(error);
+  } finally {
+    if (session) session.endSession();
+  }
 });
 
 router.get('/profile', ensureAuthenticated, (req, res) => {

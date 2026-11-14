@@ -37,6 +37,23 @@ SITE_URL=https://example.com npm start
 If `SITE_URL` is unset, the current request origin is used. Do not include a
 path, query string, or fragment in `SITE_URL`.
 
+### Admin email
+
+On the Accounts page, administrators enter SMTP email, password, host, port,
+and secure-connection setting in the send-email popup. Credentials are used
+only for that message and are not saved. Select TLS for implicit TLS (commonly
+port 465) or STARTTLS (commonly port 587). Set `SITE_URL` in the server
+environment to prefill the public site origin in the email popup, or enter the
+public site URL in the popup for the reset and unsubscribe links.
+Administrators can manually send either the
+welcome email or a password-reset link to a selected account. Welcome emails are
+not sent automatically at registration. Reset links expire after one hour and
+can be used once; only a hash of each reset token is stored.
+The welcome email's unsubscribe link saves the address to the promotional
+suppression list in MongoDB. Unsubscribed addresses are not sent further welcome
+emails; password-reset emails remain available. Admins can download the saved
+addresses from the Accounts page as `unsubscribed-emails.txt`.
+
 ### MongoDB
 
 Open "config/keys.js" and add your MongoDB URI, local or Atlas
@@ -48,8 +65,12 @@ login, accounts whose MongoDB `category` is `admin` are sent there; all other ac
 are sent to `/dashboard`. Admin routes check the account category in MongoDB on every
 request. The dashboard summarizes account counts and balances/activity, and admins
 can edit a user's profile, account category, balances, card details, and registration
-date from the Accounts page at `/admin`. Password resets are optional and stored as
-hashes; current passwords and password confirmations are never displayed.
+date from the Accounts page at `/admin`. Select **See more** to edit an account,
+send welcome or password-reset emails, or delete it. Account deletion also deletes
+that account's top-up and crypto-withdrawal requests; requests reviewed by the
+deleted admin are retained with the reviewer reference cleared. The active admin
+and the last remaining admin cannot be deleted. Password resets are optional and
+stored as hashes; current passwords and password confirmations are never displayed.
 The dashboard and Accounts page count non-admin accounts created before October 18,
 2026 as V1, and those created on or after that date as V2. Accounts without a valid
 registration date are excluded from both counts.

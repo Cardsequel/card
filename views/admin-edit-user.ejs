@@ -58,12 +58,35 @@
               <div class="card">
                 <div class="card-body">
                   <h4 class="card-title"><%= account.first_name %> <%= account.last_name %></h4>
+                  <% if (success_msg && success_msg.length) { %>
+                    <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+                  <% } %>
                   <% if (error_msg && error_msg.length) { %>
                     <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
                   <% } %>
 
+                  <div class="mb-4">
+                    <button
+                      class="btn btn-outline-primary mr-2"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#smtp-email-modal"
+                      data-email-type="welcome">
+                      Send welcome email
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#smtp-email-modal"
+                      data-email-type="password-reset">
+                      Send password-reset email
+                    </button>
+                  </div>
+
                   <form class="forms-sample" method="post" action="/admin/users/<%= encodeURIComponent(account._id) %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="search" value="<%= searchQuery %>">
                     <div class="row">
                       <div class="col-md-6 form-group">
                         <label for="first_name">First name</label>
@@ -157,9 +180,74 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary mr-2">Save changes</button>
-                    <a class="btn btn-light" href="/admin">Cancel</a>
+                    <a class="btn btn-light" href="/admin<%= searchQuery ? '?search=' + encodeURIComponent(searchQuery) : '' %>">Back to accounts</a>
+                  </form>
+
+                  <hr class="my-4">
+                  <h4 class="card-title text-danger">Delete account</h4>
+                  <p>This permanently deletes this account and its top-up and crypto-withdrawal records. This action cannot be undone.</p>
+                  <form method="post" action="/admin/users/<%= encodeURIComponent(account._id) %>/delete" onsubmit="return confirm('Permanently delete this account and its top-up and crypto-withdrawal records? This cannot be undone.');">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="search" value="<%= searchQuery %>">
+                    <button class="btn btn-danger" type="submit">Delete user</button>
                   </form>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="smtp-email-modal" tabindex="-1" role="dialog" aria-labelledby="smtp-email-modal-title" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <form id="smtp-email-form" method="post" action="/admin/users/<%= encodeURIComponent(account._id) %>/send-email">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="smtp-email-modal-title">Send email</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p class="text-muted">Recipient: <%= account.first_name %> <%= account.last_name %> (<%= account.email %>)</p>
+                    <p class="small">The SMTP email is used as both the login and sender address. Credentials are only used for this message and are not saved.</p>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="search" value="<%= searchQuery %>">
+                    <input type="hidden" id="smtp-email-type" name="emailType" value="">
+                    <div class="form-group">
+                      <label for="email-site-url">Public site URL</label>
+                      <input class="form-control" id="email-site-url" name="siteUrl" type="url" maxlength="2048" placeholder="https://example.com" value="<%= siteUrl || '' %>" required>
+                      <small class="form-text text-muted">Enter the public site origin only, without a path. This is used to build the reset or unsubscribe link.</small>
+                    </div>
+                    <div class="form-group">
+                      <label for="smtp-email">SMTP email</label>
+                      <input class="form-control" id="smtp-email" name="smtpEmail" type="email" maxlength="254" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="smtp-password">SMTP password</label>
+                      <input class="form-control" id="smtp-password" name="smtpPassword" type="password" maxlength="1024" autocomplete="new-password" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="smtp-host">SMTP host</label>
+                      <input class="form-control" id="smtp-host" name="smtpHost" type="text" maxlength="253" placeholder="smtp.example.com" autocomplete="off" required>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label for="smtp-port">Port</label>
+                        <input class="form-control" id="smtp-port" name="smtpPort" type="number" min="1" max="65535" value="465" required>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="smtp-secure">Secure connection</label>
+                        <select class="form-control" id="smtp-secure" name="smtpSecure" required>
+                          <option value="true" selected>Yes (TLS)</option>
+                          <option value="false">No (STARTTLS)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-light" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Send email</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -174,6 +262,24 @@
   <script src="/js/template.js"></script>
   <script src="/js/settings.js"></script>
   <script src="/js/todolist.js"></script>
+  <script>
+    (function () {
+      var form = document.getElementById('smtp-email-form');
+      var title = document.getElementById('smtp-email-modal-title');
+      var emailTypeInput = document.getElementById('smtp-email-type');
+
+      $('#smtp-email-modal').on('show.bs.modal', function (event) {
+        var emailType = event.relatedTarget.getAttribute('data-email-type');
+        emailTypeInput.value = emailType;
+        title.textContent = emailType === 'welcome' ? 'Send welcome email' : 'Send password-reset email';
+      });
+
+      $('#smtp-email-modal').on('hidden.bs.modal', function () {
+        form.reset();
+        emailTypeInput.value = '';
+      });
+    }());
+  </script>
   <% include ./partials/chat %>
 </body>
 

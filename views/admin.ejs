@@ -71,7 +71,7 @@
                   <div class="card data-icon-card-primary">
                     <div class="card-body">
                       <p class="mb-4">Registered accounts</p>
-                      <p class="fs-30 mb-2"><%= users.length %></p>
+                      <p class="fs-30 mb-2"><%= allUsers.length %></p>
                     </div>
                   </div>
                 </div>
@@ -79,7 +79,7 @@
                   <div class="card data-icon-card-primary">
                     <div class="card-body">
                       <p class="mb-4">Administrators</p>
-                      <p class="fs-30 mb-2"><%= users.filter(account => account.category === 'admin').length %></p>
+                      <p class="fs-30 mb-2"><%= allUsers.filter(account => account.category === 'admin').length %></p>
                     </div>
                   </div>
                 </div>
@@ -109,6 +109,31 @@
                 <div class="card-body">
                   <h4 class="card-title">Registered accounts</h4>
                   <p class="card-description">Account category and registration date</p>
+                  <form action="/admin" method="get" class="form-inline mb-3">
+                    <label class="sr-only" for="account-search">Search accounts</label>
+                    <input
+                      class="form-control mr-2 mb-2 mb-sm-0"
+                      id="account-search"
+                      name="search"
+                      type="search"
+                      value="<%= searchQuery %>"
+                      placeholder="Search name or email"
+                      aria-label="Search accounts by name or email">
+                    <button class="btn btn-primary mr-2" type="submit">Search</button>
+                    <% if (searchQuery) { %>
+                      <a class="btn btn-light" href="/admin">Clear</a>
+                    <% } %>
+                  </form>
+                  <p>
+                    <a class="btn btn-outline-secondary btn-sm" href="/admin/unsubscribed-emails.txt">
+                      Download unsubscribed emails (.txt)
+                    </a>
+                  </p>
+                  <% if (searchQuery) { %>
+                    <p class="card-description" role="status">
+                      <%= users.length %> account<%= users.length === 1 ? '' : 's' %> found for "<%= searchQuery %>"
+                    </p>
+                  <% } %>
                   <% if (success_msg && success_msg.length) { %>
                     <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
                   <% } %>
@@ -139,13 +164,15 @@
                               </td>
                               <td><%= account.date ? new Date(account.date).toLocaleDateString() : 'Unknown' %></td>
                               <td>
-                                <a class="btn btn-sm btn-primary" href="/admin/users/<%= encodeURIComponent(account._id) %>/edit">Update user</a>
+                                <a class="btn btn-sm btn-primary" href="/admin/users/<%= encodeURIComponent(account._id) %>/edit<%= searchQuery ? '?search=' + encodeURIComponent(searchQuery) : '' %>">See more</a>
                               </td>
                             </tr>
                           <% }); %>
                         <% } else { %>
                           <tr>
-                            <td colspan="5" class="text-center">No accounts have been registered yet.</td>
+                            <td colspan="5" class="text-center">
+                              <%= searchQuery ? 'No accounts match your search.' : 'No accounts have been registered yet.' %>
+                            </td>
                           </tr>
                         <% } %>
                       </tbody>
@@ -153,6 +180,7 @@
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

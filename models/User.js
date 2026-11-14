@@ -21,6 +21,19 @@ first_name: {
     type: String,
     required: true
   },
+  passwordResetTokenHash: {
+    type: String,
+    select: false
+  },
+  passwordResetExpires: {
+    type: Date,
+    select: false
+  },
+  unsubscribeTokenHashes: {
+    type: [String],
+    default: [],
+    select: false
+  },
   category: {
     type: String,
     enum: ['user', 'admin'],

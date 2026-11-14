@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Email preferences | Cardsequel</title>
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+      <div class="content-wrapper d-flex align-items-center auth px-0">
+        <div class="row w-100 mx-0">
+          <div class="col-lg-5 mx-auto">
+            <div class="auth-form-light text-left py-5 px-4 px-sm-5">
+              <a href="/"><img src="/images/logofull.png" alt="Cardsequel"></a>
+              <% if (unsubscribed) { %>
+                <h3 class="mt-4">You have unsubscribed</h3>
+                <p role="status">This email address has been removed from promotional emails. You may still receive essential account emails, such as password-reset messages.</p>
+              <% } else { %>
+                <h3 class="mt-4">Unsubscribe link unavailable</h3>
+                <p role="status">This link is invalid or has already been used.</p>
+              <% } %>
+              <a class="btn btn-primary mt-3" href="/">Return to Cardsequel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
