@@ -80,6 +80,20 @@ function validateSiteUrl(value) {
   return url.origin;
 }
 
+function createEmailUnsubscribeUrl(email, siteUrl) {
+  const address = typeof email === 'string' ? email.trim() : '';
+  if (
+    address.length > 254 ||
+    /[\r\n]/.test(address) ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)
+  ) {
+    throw new Error('Cannot create an unsubscribe link for an invalid email address.');
+  }
+
+  const origin = validateSiteUrl(siteUrl);
+  return `${origin}/users/unsubscribe-email/${encodeURIComponent(address)}`;
+}
+
 function createTransporter(smtpConfig) {
   return nodemailer.createTransport({
     host: smtpConfig.host,
@@ -141,6 +155,7 @@ function sendPasswordResetEmail(account, resetUrl, smtpConfig) {
 module.exports = {
   validateSmtpConfig,
   validateSiteUrl,
+  createEmailUnsubscribeUrl,
   sendWelcomeEmail,
   sendPasswordResetEmail
 };

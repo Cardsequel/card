@@ -9,6 +9,10 @@ const { ensureAuthenticated } = require('./config/auth');
 
 const app = express();
 app.locals.siteUrl = 'https://cardsequel.cc';
+app.use(
+  '/vendor/intl-tel-input',
+  express.static(path.join(__dirname, 'node_modules/intl-tel-input/dist'))
+);
 app.use(express.static(path.join(__dirname, 'assets')));
 
 if (process.env.SITE_URL) {

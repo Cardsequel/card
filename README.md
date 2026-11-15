@@ -50,10 +50,13 @@ Administrators can manually send either the
 welcome email or a password-reset link to a selected account. Welcome emails are
 not sent automatically at registration. Reset links expire after one hour and
 can be used once; only a hash of each reset token is stored.
-The welcome email's unsubscribe link saves the address to the promotional
-suppression list in MongoDB. Unsubscribed addresses are not sent further welcome
-emails; password-reset emails remain available. Admins can download the saved
-addresses from the Accounts page as `unsubscribed-emails.txt`.
+The welcome email's unsubscribe link contains the percent-encoded email address
+in its URL, so the link can be created without generating or storing a secret
+token. The address is added to the same promotional suppression list in MongoDB
+when the link is opened. The email in the URL is encoded, not encrypted.
+Unsubscribed addresses are not sent further welcome emails; password-reset
+emails remain available. Admins can download the saved addresses from the
+Accounts page as `unsubscribed-emails.txt`.
 
 ### MongoDB
 

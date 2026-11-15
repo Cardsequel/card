@@ -13,6 +13,11 @@ first_name: {
     type: String,
     required: true
   },
+  phone: {
+    type: String,
+    trim: true,
+    match: /^\+[1-9]\d{1,14}$/
+  },
   wallet: {
     type: String,
     required: false

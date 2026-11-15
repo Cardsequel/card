@@ -16,6 +16,7 @@ const { normalizeAmount, parseAmount } = require('../utils/amounts');
 const {
   validateSmtpConfig,
   validateSiteUrl,
+  createEmailUnsubscribeUrl,
   sendWelcomeEmail,
   sendPasswordResetEmail
 } = require('../utils/email');
@@ -244,7 +245,36 @@ router.get('/wallet', forwardAuthenticated, (req, res) => res.render('wallet'));
 
 
 // card 
-router.get('/card', forwardAuthenticated, (req, res) => res.render('card'));
+router.get('/card', forwardAuthenticated, (req, res) => {
+  const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  const seoTitle = 'Global Business Pay Prepaid Cash Cards for Online Wallets';
+  const seoDescription =
+    'Explore Global Business Pay prepaid cash card options for online-wallet spending. Compare card features, activation steps and listed prices, then apply online.';
+  const seoCanonicalUrl = `${siteUrl}/card`;
+
+  return res.render('card', {
+    seoTitle,
+    seoDescription,
+    seoCanonicalUrl,
+    seoStructuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: seoTitle,
+      description: seoDescription,
+      url: seoCanonicalUrl,
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'Global Business Pay',
+        url: `${siteUrl}/`
+      },
+      about: {
+        '@type': 'Organization',
+        name: 'Global Business Pay',
+        url: `${siteUrl}/`
+      }
+    }
+  });
+});
 
 
 // TERMS
@@ -697,27 +727,8 @@ router.post('/admin/users/:id/send-email', ensureAdmin, async (req, res, next) =
         return res.redirect(accountUrl);
       }
 
-      const unsubscribeToken = crypto.randomBytes(32).toString('hex');
-      const unsubscribeTokenHash = crypto.createHash('sha256').update(unsubscribeToken).digest('hex');
-      const updateResult = await User.updateOne(
-        { _id: account._id },
-        { $addToSet: { unsubscribeTokenHashes: unsubscribeTokenHash } }
-      ).exec();
-      if (updateResult.n !== 1) {
-        return res.status(404).render('notfound-page');
-      }
-
-      const unsubscribeUrl =
-        `${siteUrl}/users/unsubscribe/${unsubscribeToken}`;
-      try {
-        await sendWelcomeEmail(account, unsubscribeUrl, smtpConfig);
-      } catch (error) {
-        await User.updateOne(
-          { _id: account._id },
-          { $pull: { unsubscribeTokenHashes: unsubscribeTokenHash } }
-        ).exec();
-        throw error;
-      }
+      const unsubscribeUrl = createEmailUnsubscribeUrl(account.email, siteUrl);
+      await sendWelcomeEmail(account, unsubscribeUrl, smtpConfig);
       req.flash('success_msg', `Welcome email sent to ${account.email}.`);
     } catch (error) {
       console.error('Admin welcome email delivery failed:', error.message);

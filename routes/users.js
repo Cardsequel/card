@@ -3,6 +3,10 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const passport = require('passport');
+const {
+  parsePhoneNumberFromString,
+  isSupportedCountry
+} = require('libphonenumber-js/max');
 // Load User model
 const User = require('../models/User');
 const UnsubscribedEmail = require('../models/UnsubscribedEmail');
@@ -16,6 +20,33 @@ function isValidCsrfToken(suppliedToken, storedToken) {
     /^[a-f0-9]{64}$/.test(storedToken) &&
     crypto.timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(storedToken))
   );
+}
+
+function isValidEmailAddress(email) {
+  return (
+    typeof email === 'string' &&
+    email.length <= 254 &&
+    !/[\r\n]/.test(email) &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  );
+}
+
+async function addToUnsubscribedList(email) {
+  if (!isValidEmailAddress(email)) {
+    throw new Error('Cannot save an invalid email address to the unsubscribe list.');
+  }
+
+  try {
+    await UnsubscribedEmail.updateOne(
+      { normalizedEmail: email.toLowerCase() },
+      { $setOnInsert: { email, normalizedEmail: email.toLowerCase() } },
+      { upsert: true, runValidators: true }
+    ).exec();
+  } catch (error) {
+    if (error.code !== 11000) {
+      throw error;
+    }
+  }
 }
 
 // Login Page
@@ -43,25 +74,7 @@ router.get('/unsubscribe/:token', async (req, res, next) => {
     }
 
     const email = account.email.trim();
-    if (
-      email.length > 254 ||
-      /[\r\n]/.test(email) ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-      return next(new Error('Cannot save an invalid email address to the unsubscribe list.'));
-    }
-
-    try {
-      await UnsubscribedEmail.updateOne(
-        { normalizedEmail: email.toLowerCase() },
-        { $setOnInsert: { email, normalizedEmail: email.toLowerCase() } },
-        { upsert: true, runValidators: true }
-      ).exec();
-    } catch (error) {
-      if (error.code !== 11000) {
-        throw error;
-      }
-    }
+    await addToUnsubscribedList(email);
 
     await User.updateOne(
       { _id: account._id },
@@ -74,76 +87,103 @@ router.get('/unsubscribe/:token', async (req, res, next) => {
   }
 });
 
-// Register
-router.post('/register', (req, res) => {
-  const { first_name, last_name, email, password, password2, code,} = req.body;
-  let errors = [];
-  const referalcode = first_name + Math.floor(Math.random() * 76876559);
+router.get('/unsubscribe-email/:email', async (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Referrer-Policy', 'no-referrer');
 
-  if (!first_name || !last_name|| !email || !password || !password2  ) {
+  const email = req.params.email;
+  if (!isValidEmailAddress(email)) {
+    return res.status(400).render('unsubscribe', { unsubscribed: false });
+  }
+
+  try {
+    await addToUnsubscribedList(email);
+    return res.render('unsubscribe', { unsubscribed: true });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// Register
+router.post('/register', async (req, res, next) => {
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const first_name = typeof body.first_name === 'string' ? body.first_name.trim() : '';
+  const last_name = typeof body.last_name === 'string' ? body.last_name.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
+  const password2 = typeof body.password2 === 'string' ? body.password2 : '';
+  const phoneInput = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const submittedCountry =
+    typeof body.phone_country === 'string' ? body.phone_country.toUpperCase() : '';
+  const code = body.code;
+  const errors = [];
+  let phone;
+
+  if (!first_name || !last_name || !email || !password || !password2 || !phoneInput) {
     errors.push({ msg: 'Please enter all fields' });
   }
 
-  if (password != password2) {
+  if (password && password !== password2) {
     errors.push({ msg: 'Passwords do not match' });
   }
 
-  if (password.length < 6) {
+  if (password && password.length < 6) {
     errors.push({ msg: 'Password must be at least 6 characters' });
   }
 
+  if (phoneInput && phoneInput.length <= 64) {
+    try {
+      const country = /^[A-Z]{2}$/.test(submittedCountry) &&
+        isSupportedCountry(submittedCountry)
+        ? submittedCountry
+        : undefined;
+      phone = parsePhoneNumberFromString(phoneInput, country);
+    } catch (error) {
+      phone = undefined;
+    }
+  }
+
+  if (phoneInput && (!phone || !phone.isValid())) {
+    errors.push({ msg: 'Please enter a valid phone number, including its country code' });
+  } else if (phone) {
+    phone = phone.number;
+  }
+
+  const renderRegistrationForm = (formErrors) => res.status(400).render('register', {
+    errors: formErrors,
+    first_name,
+    last_name,
+    email,
+    phone: phoneInput,
+    phone_country: submittedCountry
+  });
+
   if (errors.length > 0) {
-    res.render('register', {
-      errors,
+    return renderRegistrationForm(errors);
+  }
+
+  try {
+    const existingUser = await User.findOne({ email }).exec();
+    if (existingUser) {
+      return renderRegistrationForm([{ msg: 'Email already exists' }]);
+    }
+
+    const referalcode = first_name + Math.floor(Math.random() * 76876559);
+    const newUser = new User({
       first_name,
       last_name,
       email,
-      password,
-      password2
+      phone,
+      password: await bcrypt.hash(password, 10),
+      code,
+      referalcode
     });
-  } else {
-    User.findOne({ email: email }).then(user => {
-      if (user) {
-        errors.push({ msg: 'Email already exists' });
-        res.render('register', {
-          errors,
-          first_name,
-          last_name,
-          email,
-          password,
-          password2,
-          code,
-          referalcode
-        });
-      } else {
-        const newUser = new User({
-          first_name,
-          last_name,
-          email,
-          password,
-          code,
-          referalcode
-        });
 
-        
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser
-              .save()
-              .then(() => {
-                req.flash(
-                  'success_msg',
-                  'You are now registered and can log in'
-                );
-                res.redirect('/users/login');
-              })
-              .catch(err => console.log(err));
-          });
-        });
-      }
-    });
+    await newUser.save();
+    req.flash('success_msg', 'You are now registered and can log in');
+    return res.redirect('/users/login');
+  } catch (error) {
+    return next(error);
   }
 });
 

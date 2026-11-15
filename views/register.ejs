@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="../../vendors/ti-icons/css/themify-icons.css">
   <link rel="stylesheet" href="../../vendors/css/vendor.bundle.base.css">
   <link rel="stylesheet" href="/css/password-toggle.css">
+  <link rel="stylesheet" href="/vendor/intl-tel-input/css/intlTelInput.min.css">
+  <link rel="stylesheet" href="/css/phone-field.css">
   <!-- endinject -->
   <!-- Plugin css for this page -->
   <!-- End plugin css for this page -->
@@ -37,13 +39,20 @@
 
               <form class="pt-3" id="register-form" action="/users/register" method="POST">
                 <div class="form-group">
-                  <input type="text" class="form-control form-control-lg" id="first_name" placeholder="First Name" name="first_name" autocomplete="given-name" required>
+                  <input type="text" class="form-control form-control-lg" id="first_name" placeholder="First Name" name="first_name" autocomplete="given-name" value="<%= typeof first_name !== 'undefined' ? first_name : '' %>" required>
                 </div>
                 <div class="form-group">
-                  <input type="text" class="form-control form-control-lg" id="last_name" placeholder="Last Name" name="last_name" autocomplete="family-name" required>
+                  <input type="text" class="form-control form-control-lg" id="last_name" placeholder="Last Name" name="last_name" autocomplete="family-name" value="<%= typeof last_name !== 'undefined' ? last_name : '' %>" required>
                 </div>
                 <div class="form-group">
-                  <input type="email" class="form-control form-control-lg" id="email" placeholder="Email" name="email" autocomplete="email" required>
+                  <input type="email" class="form-control form-control-lg" id="email" placeholder="Email" name="email" autocomplete="email" value="<%= typeof email !== 'undefined' ? email : '' %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone" class="sr-only">Phone number</label>
+                  <input type="tel" class="form-control form-control-lg" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="Phone number" aria-describedby="phone-help" value="<%= typeof phone !== 'undefined' ? phone : '' %>" required>
+                  <input type="hidden" id="phone_country" name="phone_country" value="<%= typeof phone_country !== 'undefined' ? phone_country : '' %>">
+                  <small id="phone-help" class="form-text text-muted">Your IP is shared with ipapi.co to suggest a country; it does not limit registration. All countries are available.</small>
+                  <small id="phone-detection-status" class="form-text text-muted" aria-live="polite"></small>
                 </div>
                
                 <div class="form-group">
@@ -93,6 +102,7 @@
   <!-- container-scroller -->
   <!-- plugins:js -->
   <script src="../../vendors/js/vendor.bundle.base.js"></script>
+  <script src="/vendor/intl-tel-input/js/intlTelInputWithUtils.min.js"></script>
   <!-- endinject -->
   <!-- Plugin js for this page -->
   <!-- End plugin js for this page -->
