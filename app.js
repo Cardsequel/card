@@ -30,6 +30,7 @@ if (process.env.SITE_URL) {
 
 app.use((req, res, next) => {
   res.locals.siteUrl = app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+  res.locals.canonicalUrl = `${res.locals.siteUrl}${req.path}`;
   res.set('X-Robots-Tag', 'noindex, nofollow');
   next();
 });
