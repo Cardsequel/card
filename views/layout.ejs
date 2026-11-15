@@ -4,22 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <meta name="description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Discover Cardsequel cash cards for online-wallet spending. Compare card options, explore features, and learn how to apply.' %>">
+    <meta name="robots" content="<%= typeof seoRobots !== 'undefined' ? seoRobots : 'noindex, nofollow' %>">
     <% if (typeof seoCanonicalUrl !== 'undefined' && seoCanonicalUrl) { %>
     <link rel="canonical" href="<%= seoCanonicalUrl %>">
     <% } %>
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Global Business Pay">
-    <meta property="og:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
-    <meta property="og:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <meta property="og:site_name" content="Cardsequel">
+    <meta property="og:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Online Wallet Cards & Cash Cards | Cardsequel' %>">
+    <meta property="og:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Discover Cardsequel cash cards for online-wallet spending. Compare card options, explore features, and learn how to apply.' %>">
     <% if (typeof seoCanonicalUrl !== 'undefined' && seoCanonicalUrl) { %>
     <meta property="og:url" content="<%= seoCanonicalUrl %>">
     <% } %>
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
-    <meta name="twitter:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <meta property="og:image" content="<%= typeof seoImageUrl !== 'undefined' && seoImageUrl || 'https://cardsequel.cc/images/logofull.png' %>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Online Wallet Cards & Cash Cards | Cardsequel' %>">
+    <meta name="twitter:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Discover Cardsequel cash cards for online-wallet spending. Compare card options, explore features, and learn how to apply.' %>">
+    <meta name="twitter:image" content="<%= typeof seoImageUrl !== 'undefined' && seoImageUrl || 'https://cardsequel.cc/images/logofull.png' %>">
     <link rel="shortcut icon" href="assets/images/logo.png" type="image/x-icon">
-    <title><%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %></title>
+    <title><%= typeof seoTitle !== 'undefined' && seoTitle || 'Online Wallet Cards & Cash Cards | Cardsequel' %></title>
     <% if (typeof seoStructuredData !== 'undefined' && seoStructuredData) { %>
     <script type="application/ld+json"><%- JSON.stringify(seoStructuredData).replace(/</g, '\\u003c') %></script>
     <% } %>

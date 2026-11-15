@@ -34,6 +34,37 @@ const publicPaths = [
   '/refund-policy'
 ];
 
+const publicSeo = {
+  '/': {
+    title: 'Online Wallet Cards & Cash Cards | Cardsequel',
+    description: 'Discover Cardsequel cash cards for online-wallet spending. Compare card options, explore features, and learn how to apply.'
+  },
+  '/about': {
+    title: 'About Cardsequel | Online Wallet Cards',
+    description: 'Learn about Cardsequel and its online-wallet card services, including card features, account activation, and payment options.'
+  },
+  '/wallet': {
+    title: 'Wallet Payments & Online Wallet Cards | Cardsequel',
+    description: 'See which online wallets and funds are supported by Cardsequel cards and learn how card payments connect to your wallet.'
+  },
+  '/card': {
+    title: 'Prepaid Cash Cards for Online Wallets | Cardsequel',
+    description: 'Explore Cardsequel cash card options for online-wallet spending, account activation, and everyday payments. Compare card features and get started.'
+  },
+  '/term-and-condition': {
+    title: 'Terms and Conditions | Cardsequel',
+    description: 'Review the terms and conditions that apply to Cardsequel services, account use, and card-related features.'
+  },
+  '/privacy-policy': {
+    title: 'Privacy Policy | Cardsequel',
+    description: 'Read how Cardsequel handles personal information and learn about the privacy practices that apply when using its services.'
+  },
+  '/refund-policy': {
+    title: 'Refund Policy | Cardsequel',
+    description: "Understand Cardsequel's refund policy, including the refund terms that apply to card purchases and service fees."
+  }
+};
+
 function escapeXml(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -46,6 +77,44 @@ function escapeXml(value) {
 router.use((req, res, next) => {
   if (publicPaths.includes(req.path) || req.path === '/llms.txt') {
     res.removeHeader('X-Robots-Tag');
+  }
+
+  const seo = publicSeo[req.path];
+  if (seo) {
+    const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
+    const canonicalUrl = `${siteUrl}${req.path === '/' ? '/' : req.path}`;
+    res.locals.seoTitle = seo.title;
+    res.locals.seoDescription = seo.description;
+    res.locals.seoCanonicalUrl = canonicalUrl;
+    res.locals.seoRobots = 'index, follow';
+    res.locals.seoImageUrl = `${siteUrl}/images/logofull.png`;
+    res.locals.seoStructuredData = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          name: 'Cardsequel',
+          url: `${siteUrl}/`,
+          logo: `${siteUrl}/images/logofull.png`
+        },
+        {
+          '@type': 'WebSite',
+          name: 'Cardsequel',
+          url: `${siteUrl}/`
+        },
+        {
+          '@type': 'WebPage',
+          name: seo.title,
+          description: seo.description,
+          url: canonicalUrl,
+          isPartOf: {
+            '@type': 'WebSite',
+            name: 'Cardsequel',
+            url: `${siteUrl}/`
+          }
+        }
+      ]
+    };
   }
   next();
 });
@@ -245,36 +314,7 @@ router.get('/wallet', forwardAuthenticated, (req, res) => res.render('wallet'));
 
 
 // card 
-router.get('/card', forwardAuthenticated, (req, res) => {
-  const siteUrl = req.app.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
-  const seoTitle = 'Global Business Pay Prepaid Cash Cards for Online Wallets';
-  const seoDescription =
-    'Explore Global Business Pay prepaid cash card options for online-wallet spending. Compare card features, activation steps and listed prices, then apply online.';
-  const seoCanonicalUrl = `${siteUrl}/card`;
-
-  return res.render('card', {
-    seoTitle,
-    seoDescription,
-    seoCanonicalUrl,
-    seoStructuredData: {
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: seoTitle,
-      description: seoDescription,
-      url: seoCanonicalUrl,
-      isPartOf: {
-        '@type': 'WebSite',
-        name: 'Global Business Pay',
-        url: `${siteUrl}/`
-      },
-      about: {
-        '@type': 'Organization',
-        name: 'Global Business Pay',
-        url: `${siteUrl}/`
-      }
-    }
-  });
-});
+router.get('/card', forwardAuthenticated, (req, res) => res.render('card'));
 
 
 // TERMS
