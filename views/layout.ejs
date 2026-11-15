@@ -4,23 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="description" content="<%= seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
-    <% if (seoCanonicalUrl) { %>
+    <meta name="description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <% if (typeof seoCanonicalUrl !== 'undefined' && seoCanonicalUrl) { %>
     <link rel="canonical" href="<%= seoCanonicalUrl %>">
     <% } %>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Global Business Pay">
-    <meta property="og:title" content="<%= seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
-    <meta property="og:description" content="<%= seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
-    <% if (seoCanonicalUrl) { %>
+    <meta property="og:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
+    <meta property="og:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <% if (typeof seoCanonicalUrl !== 'undefined' && seoCanonicalUrl) { %>
     <meta property="og:url" content="<%= seoCanonicalUrl %>">
     <% } %>
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="<%= seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
-    <meta name="twitter:description" content="<%= seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
+    <meta name="twitter:title" content="<%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %>">
+    <meta name="twitter:description" content="<%= typeof seoDescription !== 'undefined' && seoDescription || 'Global Business Pay offers prepaid cash card options for online-wallet spending.' %>">
     <link rel="shortcut icon" href="assets/images/logo.png" type="image/x-icon">
-    <title><%= seoTitle || 'Global Business Pay | Prepaid Cash Cards' %></title>
-    <% if (seoStructuredData) { %>
+    <title><%= typeof seoTitle !== 'undefined' && seoTitle || 'Global Business Pay | Prepaid Cash Cards' %></title>
+    <% if (typeof seoStructuredData !== 'undefined' && seoStructuredData) { %>
     <script type="application/ld+json"><%- JSON.stringify(seoStructuredData).replace(/</g, '\\u003c') %></script>
     <% } %>
   </head>
