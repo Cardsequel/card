@@ -82,7 +82,12 @@
                       </div>
                       <div class="form-group col-md-6">
                         <label for="country">Country</label>
-                        <input class="form-control" id="country" name="country" maxlength="80" autocomplete="country-name" required value="<%= kyc.address && kyc.address.country || '' %>">
+                        <select class="form-control" id="country" name="country" autocomplete="country-name" required>
+                          <option value="">Select a country</option>
+                          <% countries.forEach(country => { %>
+                            <option value="<%= country.name %>" <%= kyc.address && kyc.address.country === country.name ? 'selected' : '' %>><%= country.name %></option>
+                          <% }); %>
+                        </select>
                       </div>
                     </div>
 

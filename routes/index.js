@@ -6,6 +6,7 @@ const fs = require('fs').promises;
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
+const { getCountries } = require('libphonenumber-js/max');
 const User = require('../models/User');
 const UnsubscribedEmail = require('../models/UnsubscribedEmail');
 const TopUpRequest = require('../models/TopUpRequest');
@@ -24,6 +25,13 @@ const {
   sendPasswordResetEmail
 } = require('../utils/email');
 const { ensureAuthenticated, ensureAdmin, forwardAuthenticated } = require('../config/auth');
+
+const countryDisplayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+const kycCountries = getCountries()
+  .map(code => ({ code, name: countryDisplayNames.of(code) }))
+  .filter(country => country.name && country.name !== country.code)
+  .sort((first, second) => first.name.localeCompare(second.name));
+const kycCountryNames = new Set(kycCountries.map(country => country.name));
 
 const v1AccountCutoff = new Date('2026-10-18T00:00:00.000Z');
 
@@ -366,6 +374,7 @@ router.get('/kyc', ensureAuthenticated, (req, res) => {
     layout: false,
     user: req.user,
     kyc: req.user.kyc || {},
+    countries: kycCountries,
     csrfToken: req.session.kycToken
   });
 });
@@ -403,6 +412,7 @@ router.post('/kyc', ensureAuthenticated, parseKycUpload, async (req, res, next) 
     !address.region || address.region.length > 80 ||
     !address.postalCode || address.postalCode.length > 20 ||
     !address.country || address.country.length > 80 ||
+    !kycCountryNames.has(address.country) ||
     !allowedIdTypes.includes(governmentIdType) ||
     files.some(entry => !entry.file || !entry.allowed.includes(entry.file.mimetype))
   ) {
