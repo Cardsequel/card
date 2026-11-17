@@ -1332,6 +1332,7 @@ router.get('/admin/users/:id/edit', ensureAdmin, (req, res, next) => {
       return res.render('admin-edit-user', {
         user: req.user,
         account: accountForForm,
+        isV2: isV2Account(accountForForm),
         searchQuery: typeof req.query.search === 'string' ? req.query.search.trim() : '',
         siteUrl: req.app.locals.siteUrl || '',
         csrfToken: req.session.adminEditToken
@@ -1360,6 +1361,10 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
 
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(404).render('notfound-page');
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'plan_tpye') && typeof body.plan_tpye !== 'string') {
+    req.flash('error_msg', 'Please submit a valid card type.');
+    return res.redirect(accountUrl);
   }
 
   const textFields = [
@@ -1398,6 +1403,7 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
     code: 120,
     referalcode: 120,
     cardnumber: 64,
+    plan_tpye: 80,
     CVV: 4,
     expirydate: 10
   };
@@ -1481,6 +1487,14 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
               expirydate: values.expirydate,
               date: registrationDate
             };
+            if (isV2Account(account)) {
+              const cardType = typeof body.plan_tpye === 'string' ? body.plan_tpye.trim() : '';
+              if (cardType.length > maxLengths.plan_tpye) {
+                req.flash('error_msg', 'Card type must be 80 characters or fewer.');
+                return res.redirect(accountUrl);
+              }
+              changes.plan_tpye = cardType;
+            }
             const passwordHash = typeof newPassword === 'string' && newPassword !== ''
               ? bcrypt.hash(newPassword, 10)
               : Promise.resolve(null);
