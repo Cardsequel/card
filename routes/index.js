@@ -1403,7 +1403,6 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
     code: 120,
     referalcode: 120,
     cardnumber: 64,
-    plan_tpye: 80,
     CVV: 4,
     expirydate: 10
   };
@@ -1430,11 +1429,14 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
     registrationDate.toISOString().slice(0, 10) === values.date;
   const newPassword = body.new_password;
   const validLengths = Object.keys(maxLengths).every(field => values[field].length <= maxLengths[field]);
+  const validCardType =
+    typeof body.plan_tpye !== 'string' || body.plan_tpye.trim().length <= 80;
 
   if (
     !values.first_name ||
     !values.last_name ||
     !validLengths ||
+    !validCardType ||
     !validEmail ||
     !['user', 'admin'].includes(values.category) ||
     !validMoney ||
@@ -1449,7 +1451,7 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
   }
 
   User.findById(req.params.id)
-    .select('category')
+    .select('category date')
     .lean()
     .then(account => {
       if (!account) {
@@ -1489,10 +1491,6 @@ router.post('/admin/users/:id', ensureAdmin, (req, res, next) => {
             };
             if (isV2Account(account)) {
               const cardType = typeof body.plan_tpye === 'string' ? body.plan_tpye.trim() : '';
-              if (cardType.length > maxLengths.plan_tpye) {
-                req.flash('error_msg', 'Card type must be 80 characters or fewer.');
-                return res.redirect(accountUrl);
-              }
               changes.plan_tpye = cardType;
             }
             const passwordHash = typeof newPassword === 'string' && newPassword !== ''
