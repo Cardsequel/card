@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const fs = require('fs').promises;
 const mongoose = require('mongoose');
+const multer = require('multer');
+const path = require('path');
 const User = require('../models/User');
 const UnsubscribedEmail = require('../models/UnsubscribedEmail');
 const TopUpRequest = require('../models/TopUpRequest');
@@ -81,6 +84,77 @@ function isValidCsrfToken(suppliedToken, storedToken) {
     /^[a-f0-9]{64}$/.test(storedToken) &&
     crypto.timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(storedToken))
   );
+}
+
+const kycUploadDirectory = path.resolve(
+  process.env.KYC_UPLOAD_DIR || path.join(__dirname, '../private/kyc')
+);
+const kycUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 2,
+    fields: 8,
+    parts: 12
+  },
+  fileFilter(req, file, callback) {
+    const allowedTypes = file.fieldname === 'governmentId'
+      ? ['application/pdf', 'image/jpeg', 'image/png']
+      : file.fieldname === 'portrait'
+        ? ['image/jpeg', 'image/png', 'image/webp']
+        : [];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return callback(new Error('Choose a supported file type for each document.'));
+    }
+    return callback(null, true);
+  }
+}).fields([
+  { name: 'governmentId', maxCount: 1 },
+  { name: 'portrait', maxCount: 1 }
+]);
+
+function getUploadedFileType(buffer) {
+  if (buffer.subarray(0, 5).toString('ascii') === '%PDF-') {
+    return { mimeType: 'application/pdf', extension: 'pdf' };
+  }
+  if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) {
+    return { mimeType: 'image/jpeg', extension: 'jpg' };
+  }
+  if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return { mimeType: 'image/png', extension: 'png' };
+  }
+  if (
+    buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    return { mimeType: 'image/webp', extension: 'webp' };
+  }
+  return null;
+}
+
+function getKycStoragePath(storedName) {
+  return typeof storedName === 'string' && /^[a-f0-9]{32}\.(?:pdf|jpg|png|webp)$/.test(storedName)
+    ? path.join(kycUploadDirectory, storedName)
+    : null;
+}
+
+function parseKycUpload(req, res, next) {
+  kycUpload(req, res, error => {
+    if (error instanceof multer.MulterError) {
+      req.flash('error_msg', error.code === 'LIMIT_FILE_SIZE'
+        ? 'Each KYC file must be 5 MB or smaller.'
+        : 'Upload one government ID and one portrait photo, each no larger than 5 MB.');
+      return res.redirect('/kyc');
+    }
+    if (error) {
+      if (error.message === 'Choose a supported file type for each document.') {
+        req.flash('error_msg', error.message);
+        return res.redirect('/kyc');
+      }
+      return next(error);
+    }
+    return next();
+  });
 }
 
 function getRequestLocale(req) {
@@ -170,6 +244,7 @@ router.get('/robots.txt', (req, res) => {
     'Disallow: /admin',
     'Disallow: /dashboard',
     'Disallow: /profile',
+    'Disallow: /kyc',
     'Disallow: /users/',
     'Disallow: /checkout',
     'Disallow: /card-top-up',
@@ -274,10 +349,133 @@ router.get('/dashboard', ensureAuthenticated, (req, res) => {
     numberLocale,
     card: {
       number: maskCardNumber(req.user.cardnumber),
+      type: req.user.plan_tpye || '',
       expiry: req.user.expirydate || 'XX/XX',
       holder: `${req.user.first_name} ${req.user.last_name}`.trim()
     }
   });
+});
+
+router.get('/kyc', ensureAuthenticated, (req, res) => {
+  if (!req.session.kycToken) {
+    req.session.kycToken = crypto.randomBytes(32).toString('hex');
+  }
+  res.set('Cache-Control', 'no-store');
+  res.set('Referrer-Policy', 'no-referrer');
+  return res.render('kyc', {
+    layout: false,
+    user: req.user,
+    kyc: req.user.kyc || {},
+    csrfToken: req.session.kycToken
+  });
+});
+
+router.post('/kyc', ensureAuthenticated, parseKycUpload, async (req, res, next) => {
+  const body = req.body || {};
+  if (!isValidCsrfToken(body._csrf, req.session.kycToken)) {
+    req.flash('error_msg', 'Your KYC form expired. Reload the page and try again.');
+    return res.redirect('/kyc');
+  }
+
+  const address = {
+    line1: typeof body.address_line1 === 'string' ? body.address_line1.trim() : '',
+    line2: typeof body.address_line2 === 'string' ? body.address_line2.trim() : '',
+    city: typeof body.city === 'string' ? body.city.trim() : '',
+    region: typeof body.region === 'string' ? body.region.trim() : '',
+    postalCode: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
+    country: typeof body.country === 'string' ? body.country.trim() : ''
+  };
+  const governmentIdType = typeof body.government_id_type === 'string'
+    ? body.government_id_type
+    : '';
+  const allowedIdTypes = ['passport', 'drivers_license', 'national_id', 'other'];
+  const governmentIdFile = req.files && req.files.governmentId && req.files.governmentId[0];
+  const portraitFile = req.files && req.files.portrait && req.files.portrait[0];
+  const files = [
+    { field: 'governmentId', file: governmentIdFile, allowed: ['application/pdf', 'image/jpeg', 'image/png'] },
+    { field: 'portrait', file: portraitFile, allowed: ['image/jpeg', 'image/png', 'image/webp'] }
+  ];
+
+  if (
+    !address.line1 || address.line1.length > 120 ||
+    address.line2.length > 120 ||
+    !address.city || address.city.length > 80 ||
+    !address.region || address.region.length > 80 ||
+    !address.postalCode || address.postalCode.length > 20 ||
+    !address.country || address.country.length > 80 ||
+    !allowedIdTypes.includes(governmentIdType) ||
+    files.some(entry => !entry.file || !entry.allowed.includes(entry.file.mimetype))
+  ) {
+    req.flash('error_msg', 'Complete all required address and identity fields and attach both supported documents.');
+    return res.redirect('/kyc');
+  }
+
+  const detectedTypes = files.map(entry => getUploadedFileType(entry.file.buffer));
+  if (detectedTypes.some((type, index) => !type || type.mimeType !== files[index].file.mimetype)) {
+    req.flash('error_msg', 'One or more uploaded files do not match their file type.');
+    return res.redirect('/kyc');
+  }
+
+  const savedNames = [];
+  try {
+    await fs.mkdir(kycUploadDirectory, { recursive: true, mode: 0o700 });
+    await fs.chmod(kycUploadDirectory, 0o700);
+    const savedDocuments = {};
+    for (let index = 0; index < files.length; index += 1) {
+      const { field, file } = files[index];
+      const storageName = `${crypto.randomBytes(16).toString('hex')}.${detectedTypes[index].extension}`;
+      await fs.writeFile(path.join(kycUploadDirectory, storageName), file.buffer, {
+        flag: 'wx',
+        mode: 0o600
+      });
+      savedNames.push(storageName);
+      savedDocuments[field] = {
+        storedName: storageName,
+        mimeType: detectedTypes[index].mimeType
+      };
+    }
+
+    const previousNames = [
+      req.user.kyc && req.user.kyc.governmentId && req.user.kyc.governmentId.storedName,
+      req.user.kyc && req.user.kyc.portrait && req.user.kyc.portrait.storedName
+    ];
+    req.user.kyc = {
+      status: 'pending',
+      governmentIdType,
+      address,
+      governmentId: savedDocuments.governmentId,
+      portrait: savedDocuments.portrait,
+      submittedAt: new Date()
+    };
+    await req.user.save();
+    req.session.kycToken = crypto.randomBytes(32).toString('hex');
+
+    for (const previousName of previousNames) {
+      const previousPath = getKycStoragePath(previousName);
+      if (previousPath && !savedNames.includes(previousName)) {
+        try {
+          await fs.unlink(previousPath);
+        } catch (error) {
+          if (error.code !== 'ENOENT') {
+            console.error('Unable to remove replaced KYC upload:', error);
+          }
+        }
+      }
+    }
+    req.flash('success_msg', 'Your KYC documents were submitted for review.');
+    return res.redirect('/kyc');
+  } catch (error) {
+    await Promise.all(savedNames.map(async storedName => {
+      try {
+        await fs.unlink(path.join(kycUploadDirectory, storedName));
+      } catch (cleanupError) {
+        if (cleanupError.code !== 'ENOENT') {
+          console.error('Unable to remove incomplete KYC upload:', cleanupError);
+        }
+      }
+    }));
+    return next(error);
+  }
 });
 
 router.get('/card-top-up', ensureAuthenticated, (req, res, next) => {
@@ -293,6 +491,12 @@ router.get('/card-top-up', ensureAuthenticated, (req, res, next) => {
   if (!req.session.topUpToken) {
     req.session.topUpToken = crypto.randomBytes(32).toString('hex');
   }
+  const card = {
+    number: maskCardNumber(req.user.cardnumber),
+    type: typeof req.user.plan_tpye === 'string' ? req.user.plan_tpye : '',
+    expiry: req.user.expirydate || 'XX/XX',
+    holder: `${req.user.first_name} ${req.user.last_name}`.trim()
+  };
   return TopUpRequest.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .limit(20)
@@ -302,6 +506,7 @@ router.get('/card-top-up', ensureAuthenticated, (req, res, next) => {
       user: req.user,
       requests,
       hasCard: true,
+      card,
       csrfToken: req.session.topUpToken
     }))
     .catch(next);
@@ -451,6 +656,82 @@ router.get('/not-found', ensureAuthenticated, (req, res) =>
     layout: false
   })
 );
+
+router.get('/admin/kyc', ensureAdmin, (req, res, next) => {
+  User.find({ 'kyc.status': 'pending', category: { $ne: 'admin' } })
+    .select('first_name last_name email kyc.status kyc.submittedAt')
+    .sort({ 'kyc.submittedAt': -1 })
+    .lean()
+    .exec()
+    .then(submissions => {
+      res.set('Cache-Control', 'no-store');
+      return res.render('admin-kyc', {
+        user: req.user,
+        submissions,
+        success_msg: req.flash('success_msg'),
+        error_msg: req.flash('error_msg')
+      });
+    })
+    .catch(next);
+});
+
+router.get('/admin/kyc/:id', ensureAdmin, (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    req.flash('error_msg', 'That KYC submission could not be found.');
+    return res.redirect('/admin/kyc');
+  }
+
+  User.findOne({ _id: req.params.id, category: { $ne: 'admin' } })
+    .select('first_name last_name email kyc')
+    .lean()
+    .exec()
+    .then(account => {
+      if (!account || !account.kyc || account.kyc.status !== 'pending') {
+        req.flash('error_msg', 'That KYC submission could not be found.');
+        return res.redirect('/admin/kyc');
+      }
+      res.set('Cache-Control', 'no-store');
+      res.set('Referrer-Policy', 'no-referrer');
+      return res.render('admin-kyc-detail', { user: req.user, account });
+    })
+    .catch(next);
+});
+
+router.get('/admin/kyc/:id/document/:documentType', ensureAdmin, async (req, res, next) => {
+  const documentType = req.params.documentType;
+  if (
+    !mongoose.Types.ObjectId.isValid(req.params.id) ||
+    !['governmentId', 'portrait'].includes(documentType)
+  ) {
+    return res.sendStatus(404);
+  }
+
+  try {
+    const account = await User.findOne({ _id: req.params.id, category: { $ne: 'admin' } })
+      .select(`kyc.${documentType}`)
+      .lean()
+      .exec();
+    const document = account && account.kyc && account.kyc[documentType];
+    const filePath = document && getKycStoragePath(document.storedName);
+    if (!filePath || !['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(document.mimeType)) {
+      return res.sendStatus(404);
+    }
+
+    res.set('Cache-Control', 'private, no-store');
+    res.set('Referrer-Policy', 'no-referrer');
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Content-Type', document.mimeType);
+    res.set(
+      'Content-Disposition',
+      document.mimeType === 'application/pdf' ? 'attachment; filename="government-id.pdf"' : 'inline'
+    );
+    return res.sendFile(filePath, error => {
+      if (error) return next(error);
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 router.get('/admin-dashboard', ensureAdmin, (req, res, next) => {
   const numberLocale = getRequestLocale(req);
@@ -611,7 +892,7 @@ router.get('/admin-dashboard', ensureAdmin, (req, res, next) => {
 });
 
 router.get('/admin', ensureAdmin, (req, res, next) => {
-  User.find({}, 'first_name last_name email category date')
+  User.find({}, 'first_name last_name email phone category date')
     .sort({ date: -1 })
     .lean()
     .exec()
@@ -1253,7 +1534,11 @@ router.post('/admin/users/:id/delete', ensureAdmin, async (req, res, next) => {
     session.startTransaction();
     transactionActive = true;
 
-    const account = await User.findById(accountId).select('category').session(session).lean().exec();
+    const account = await User.findById(accountId)
+      .select('category kyc.governmentId.storedName kyc.portrait.storedName')
+      .session(session)
+      .lean()
+      .exec();
     if (!account) {
       await session.abortTransaction();
       transactionActive = false;
@@ -1293,8 +1578,23 @@ router.post('/admin/users/:id/delete', ensureAdmin, async (req, res, next) => {
 
     await session.commitTransaction();
     transactionActive = false;
+    const kycStoredNames = [
+      account.kyc && account.kyc.governmentId && account.kyc.governmentId.storedName,
+      account.kyc && account.kyc.portrait && account.kyc.portrait.storedName
+    ];
+    await Promise.all(kycStoredNames.map(async storedName => {
+      const filePath = getKycStoragePath(storedName);
+      if (!filePath) return;
+      try {
+        await fs.unlink(filePath);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          console.error('Unable to remove KYC upload for deleted account:', error);
+        }
+      }
+    }));
     req.session.adminEditToken = crypto.randomBytes(32).toString('hex');
-    req.flash('success_msg', 'Account and its top-up and crypto-withdrawal records were deleted.');
+    req.flash('success_msg', 'Account and its related records and KYC uploads were deleted.');
     return res.redirect(adminUrl);
   } catch (error) {
     if (session && transactionActive) {

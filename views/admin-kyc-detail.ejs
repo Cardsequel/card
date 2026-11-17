@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>KYC submission | Cardsequel Admin</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/admin-dashboard"><img src="/images/logofull.png" alt="Cardsequel"></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item"><a class="nav-link" href="/users/logout">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'admin'; var activePage = '/admin/kyc'; %>
+      <% include ./partials/dashboard-sidebar %>
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-xl-9 col-lg-11 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <a href="/admin/kyc" class="btn btn-light btn-sm mb-3">Back to KYC reviews</a>
+                  <h3 class="font-weight-bold">KYC submission</h3>
+                  <p class="card-description">Pending review</p>
+                  <h5 class="mt-4">Account</h5>
+                  <p class="mb-1"><strong>Name:</strong> <%= `${account.first_name} ${account.last_name}`.trim() %></p>
+                  <p><strong>Email:</strong> <%= account.email %></p>
+
+                  <h5 class="mt-4">Government-issued ID</h5>
+                  <p class="mb-2"><strong>Type:</strong>
+                    <%= ({
+                      passport: 'Passport',
+                      drivers_license: "Driver's license",
+                      national_id: 'National ID',
+                      other: 'Other government-issued ID'
+                    })[account.kyc.governmentIdType] || 'Not specified' %>
+                  </p>
+                  <p><a class="btn btn-outline-primary btn-sm" href="/admin/kyc/<%= account._id %>/document/governmentId" rel="noreferrer">Open ID document</a></p>
+
+                  <h5 class="mt-4">Home address</h5>
+                  <address>
+                    <%= account.kyc.address.line1 %><br>
+                    <% if (account.kyc.address.line2) { %><%= account.kyc.address.line2 %><br><% } %>
+                    <%= account.kyc.address.city %>, <%= account.kyc.address.region %> <%= account.kyc.address.postalCode %><br>
+                    <%= account.kyc.address.country %>
+                  </address>
+
+                  <h5 class="mt-4">Portrait photograph</h5>
+                  <p><a class="btn btn-outline-primary btn-sm" href="/admin/kyc/<%= account._id %>/document/portrait" target="_blank" rel="noreferrer">Open portrait</a></p>
+                  <% if (account.kyc.portrait && ['image/jpeg', 'image/png', 'image/webp'].includes(account.kyc.portrait.mimeType)) { %>
+                    <img
+                      src="/admin/kyc/<%= account._id %>/document/portrait"
+                      alt="KYC portrait for <%= `${account.first_name} ${account.last_name}`.trim() %>"
+                      referrerpolicy="no-referrer"
+                      style="max-width: 100%; max-height: 480px;">
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+</body>
+</html>

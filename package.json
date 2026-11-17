@@ -21,6 +21,7 @@
     "intl-tel-input": "^29.5.11",
     "libphonenumber-js": "^1.13.16",
     "mongoose": "^5.7.5",
+    "multer": "^2.5.0",
     "nodemailer": "^6.4.11",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",

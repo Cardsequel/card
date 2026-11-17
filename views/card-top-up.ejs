@@ -9,6 +9,84 @@
   <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
   <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
   <link rel="shortcut icon" href="/images/favicon.png">
+  <style>
+    .top-up-card {
+      position: relative;
+      width: min(100%, 460px);
+      aspect-ratio: 1.75;
+      overflow: hidden;
+      border-radius: 14px;
+      background: #6eeb9d;
+      box-shadow: 0 12px 30px rgba(32, 40, 51, .16);
+      color: #111;
+    }
+    .top-up-card__chip {
+      position: absolute;
+      top: 38%;
+      right: 10%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 48px;
+      height: 36px;
+      overflow: hidden;
+      border: 1px solid #9aa19c;
+      border-radius: 7px;
+      background:
+        linear-gradient(90deg, transparent 49%, #a7ada8 49%, #a7ada8 51%, transparent 51%),
+        linear-gradient(transparent 49%, #a7ada8 49%, #a7ada8 51%, transparent 51%),
+        #e8e9e5;
+    }
+    .top-up-card__details {
+      position: absolute;
+      right: 24px;
+      bottom: 16px;
+      left: 24px;
+    }
+    .top-up-card__number {
+      display: block;
+      margin-bottom: 8px;
+      font-size: clamp(12px, 2vw, 16px);
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      white-space: nowrap;
+    }
+    .top-up-card__label {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 8px;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+    .top-up-card__holder {
+      display: block;
+      overflow: hidden;
+      font-size: 11px;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .top-up-card__base {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      height: 23%;
+      align-items: center;
+      padding: 8px 24px;
+      background: #fff;
+    }
+    .top-up-card__expiry {
+      font-size: 11px;
+      font-weight: 600;
+    }
+    @media (max-width: 575px) {
+      .top-up-card__details { right: 16px; bottom: 11px; left: 16px; }
+      .top-up-card__base { padding-right: 16px; padding-left: 16px; }
+      .top-up-card__number { margin-bottom: 5px; letter-spacing: 1px; }
+    }
+  </style>
 </head>
 <body>
   <div class="container-scroller">
@@ -69,6 +147,30 @@
             </div>
           <% } else { %>
             <div class="row">
+              <div class="col-12 grid-margin">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Your card</h4>
+                    <div class="top-up-card" role="img" aria-label="Card ending in <%= card.number.slice(-4) %>, <%= card.type || 'card type not assigned' %>, cardholder <%= card.holder %>">
+                      <span class="top-up-card__chip" aria-hidden="true"></span>
+                      <div class="top-up-card__details">
+                        <% if (card.type) { %>
+                          <span class="top-up-card__label"><%= card.type %></span>
+                        <% } %>
+                        <span class="top-up-card__number"><%= card.number %></span>
+                        <span class="top-up-card__label">Cardholder</span>
+                        <span class="top-up-card__holder"><%= card.holder %></span>
+                      </div>
+                      <div class="top-up-card__base">
+                        <span>
+                          <span class="top-up-card__label">Expires</span>
+                          <span class="top-up-card__expiry"><%= card.expiry %></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div class="col-lg-6 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">

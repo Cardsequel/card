@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Identity verification | Cardsequel</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/dashboard"><img src="/images/logofull.png" alt="Cardsequel"></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item">
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/users/logout">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid page-body-wrapper">
+      <div class="main-panel w-100">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-xl-8 col-lg-10 mx-auto grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="font-weight-bold">Identity verification</h3>
+                  <p class="card-description">Submit your government-issued ID, home address, and a portrait photograph for review.</p>
+
+                  <% if (success_msg && success_msg.length) { %>
+                    <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+                  <% } %>
+                  <% if (error_msg && error_msg.length) { %>
+                    <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+                  <% } %>
+
+                  <% if (kyc.status === 'pending') { %>
+                    <div class="alert alert-info" role="status">
+                      Your documents were submitted on <%= new Date(kyc.submittedAt).toLocaleDateString() %> and are awaiting review.
+                    </div>
+                  <% } %>
+
+                  <div class="alert alert-light" role="note">
+                    Upload a clear, readable image or PDF of your ID and a recent portrait photo. Files are limited to 5 MB each and are only available to administrators for review.
+                  </div>
+
+                  <form method="post" action="/kyc" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <h5 class="mt-4 mb-3">Home address</h5>
+                    <div class="form-group">
+                      <label for="address_line1">Address line 1</label>
+                      <input class="form-control" id="address_line1" name="address_line1" maxlength="120" autocomplete="address-line1" required value="<%= kyc.address && kyc.address.line1 || '' %>">
+                    </div>
+                    <div class="form-group">
+                      <label for="address_line2">Address line 2 <span class="text-muted">(optional)</span></label>
+                      <input class="form-control" id="address_line2" name="address_line2" maxlength="120" autocomplete="address-line2" value="<%= kyc.address && kyc.address.line2 || '' %>">
+                    </div>
+                    <div class="row">
+                      <div class="form-group col-md-6">
+                        <label for="city">City / town</label>
+                        <input class="form-control" id="city" name="city" maxlength="80" autocomplete="address-level2" required value="<%= kyc.address && kyc.address.city || '' %>">
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="region">State / province / region</label>
+                        <input class="form-control" id="region" name="region" maxlength="80" autocomplete="address-level1" required value="<%= kyc.address && kyc.address.region || '' %>">
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group col-md-6">
+                        <label for="postal_code">Postal / ZIP code</label>
+                        <input class="form-control" id="postal_code" name="postal_code" maxlength="20" autocomplete="postal-code" required value="<%= kyc.address && kyc.address.postalCode || '' %>">
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="country">Country</label>
+                        <input class="form-control" id="country" name="country" maxlength="80" autocomplete="country-name" required value="<%= kyc.address && kyc.address.country || '' %>">
+                      </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Identity documents</h5>
+                    <div class="form-group">
+                      <label for="government_id_type">Government-issued ID type</label>
+                      <select class="form-control" id="government_id_type" name="government_id_type" required>
+                        <option value="">Select an ID type</option>
+                        <option value="passport" <%= kyc.governmentIdType === 'passport' ? 'selected' : '' %>>Passport</option>
+                        <option value="drivers_license" <%= kyc.governmentIdType === 'drivers_license' ? 'selected' : '' %>>Driver's license</option>
+                        <option value="national_id" <%= kyc.governmentIdType === 'national_id' ? 'selected' : '' %>>National ID</option>
+                        <option value="other" <%= kyc.governmentIdType === 'other' ? 'selected' : '' %>>Other government-issued ID</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="governmentId">Photo or scan of your ID</label>
+                      <input class="form-control-file" id="governmentId" name="governmentId" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+                      <small class="form-text text-muted">PDF, JPEG, or PNG; maximum 5 MB.</small>
+                    </div>
+                    <div class="form-group">
+                      <label for="portrait">Portrait photograph</label>
+                      <input class="form-control-file" id="portrait" name="portrait" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
+                      <small class="form-text text-muted">JPEG, PNG, or WebP; maximum 5 MB.</small>
+                    </div>
+                    <button class="btn btn-primary" type="submit"><%= kyc.status === 'pending' ? 'Replace submission' : 'Submit for verification' %></button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+</body>
+</html>

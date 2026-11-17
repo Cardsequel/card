@@ -58,6 +58,21 @@ Unsubscribed addresses are not sent further welcome emails; password-reset
 emails remain available. Admins can download the saved addresses from the
 Accounts page as `unsubscribed-emails.txt`.
 
+### KYC submissions
+
+Authenticated users can open `/kyc` to submit their government-issued ID,
+home address, and portrait photograph. Signing in after being redirected to
+this route returns the user to `/kyc`. KYC submissions are not linked from the
+user dashboard. Administrators can review submissions from **KYC reviews** in
+the admin navigation; document access is restricted to administrators.
+
+Uploads are limited to 5 MB each and accepted only as PDF/JPEG/PNG for an ID
+and JPEG/PNG/WebP for a portrait. Files are stored outside the public assets
+directory in `private/kyc` by default, with private directory/file permissions.
+Set `KYC_UPLOAD_DIR` to use a private persistent server directory. The directory
+is git-ignored; protect it in deployment backups and apply the data-retention
+and access-control requirements relevant to your service.
+
 ### MongoDB
 
 Open "config/keys.js" and add your MongoDB URI, local or Atlas

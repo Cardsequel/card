@@ -77,6 +77,10 @@ first_name: {
     type: String,
     default: 'XXXX XXXX XXXX XXXX'
   },
+  plan_tpye: {
+    type: String,
+    trim: true
+  },
   CVV :{
     type: String,
     default: 'XXX'
@@ -86,6 +90,31 @@ first_name: {
     default: 'XX/XX'
   },
 
+  kyc: {
+    status: {
+      type: String,
+      enum: ['not_submitted', 'pending'],
+      default: 'not_submitted'
+    },
+    governmentIdType: String,
+    address: {
+      line1: String,
+      line2: String,
+      city: String,
+      region: String,
+      postalCode: String,
+      country: String
+    },
+    governmentId: {
+      storedName: String,
+      mimeType: String
+    },
+    portrait: {
+      storedName: String,
+      mimeType: String
+    },
+    submittedAt: Date
+  },
 
   date: {
     type: Date,

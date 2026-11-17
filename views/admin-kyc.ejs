@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>KYC reviews | Cardsequel Admin</title>
+  <link rel="stylesheet" href="/vendors/feather/feather.css">
+  <link rel="stylesheet" href="/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/css/vertical-layout-light/style.css">
+  <link rel="shortcut icon" href="/images/favicon.png">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/admin-dashboard"><img src="/images/logofull.png" alt="Cardsequel"></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item"><a class="nav-link" href="/users/logout">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid page-body-wrapper">
+      <% var sidebarRole = 'admin'; var activePage = '/admin/kyc'; %>
+      <% include ./partials/dashboard-sidebar %>
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="font-weight-bold">KYC reviews</h3>
+                  <p class="card-description">Pending identity-verification submissions</p>
+                  <% if (success_msg && success_msg.length) { %>
+                    <div class="alert alert-success" role="status"><%= success_msg[0] %></div>
+                  <% } %>
+                  <% if (error_msg && error_msg.length) { %>
+                    <div class="alert alert-danger" role="alert"><%= error_msg[0] %></div>
+                  <% } %>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr><th>Account</th><th>Email</th><th>Submitted</th><th>Details</th></tr>
+                      </thead>
+                      <tbody>
+                        <% if (!submissions.length) { %>
+                          <tr><td colspan="4" class="text-center">There are no pending KYC submissions.</td></tr>
+                        <% } %>
+                        <% submissions.forEach(submission => { %>
+                          <tr>
+                            <td><%= `${submission.first_name} ${submission.last_name}`.trim() %></td>
+                            <td><%= submission.email %></td>
+                            <td><%= submission.kyc && submission.kyc.submittedAt ? new Date(submission.kyc.submittedAt).toLocaleString() : '—' %></td>
+                            <td><a class="btn btn-primary btn-sm" href="/admin/kyc/<%= submission._id %>">Review details</a></td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/js/off-canvas.js"></script>
+  <script src="/js/hoverable-collapse.js"></script>
+  <script src="/js/template.js"></script>
+</body>
+</html>

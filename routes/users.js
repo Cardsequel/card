@@ -332,6 +332,18 @@ router.post('/login', (req, res, next) => {
       if (loginError) {
         return next(loginError);
       }
+      const returnTo = req.session.returnTo;
+      delete req.session.returnTo;
+      if (typeof returnTo === 'string') {
+        try {
+          const destination = new URL(returnTo, 'http://localhost');
+          if (destination.origin === 'http://localhost') {
+            return res.redirect(`${destination.pathname}${destination.search}${destination.hash}`);
+          }
+        } catch (error) {
+          return next(error);
+        }
+      }
       return res.redirect(user.category === 'admin' ? '/admin-dashboard' : '/dashboard');
     });
   })(req, res, next);

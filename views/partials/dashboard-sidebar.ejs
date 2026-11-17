@@ -13,6 +13,12 @@
           <span class="menu-title">Accounts</span>
         </a>
       </li>
+      <li class="nav-item <%= activePage === '/admin/kyc' ? 'active' : '' %>">
+        <a class="nav-link" href="/admin/kyc" <%- activePage === '/admin/kyc' ? 'aria-current="page"' : '' %>>
+          <i class="ti-id-badge menu-icon"></i>
+          <span class="menu-title">KYC reviews</span>
+        </a>
+      </li>
       <li class="nav-item <%= activePage === '/admin/top-ups' ? 'active' : '' %>">
         <a class="nav-link" href="/admin/top-ups" <%- activePage === '/admin/top-ups' ? 'aria-current="page"' : '' %>>
           <i class="ti-wallet menu-icon"></i>

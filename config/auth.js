@@ -5,7 +5,8 @@ module.exports = {
     if (req.isAuthenticated()) {
       return next();
     }
-    req.flash('error_msg', 'Please log in to view dashboard');
+    req.session.returnTo = req.originalUrl;
+    req.flash('error_msg', 'Please log in to continue');
     return res.redirect('/users/login');
   },
   ensureAdmin: function(req, res, next) {

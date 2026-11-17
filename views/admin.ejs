@@ -146,6 +146,7 @@
                         <tr>
                           <th>Account</th>
                           <th>Email</th>
+                          <th>Phone</th>
                           <th>Category</th>
                           <th>Joined</th>
                           <th>Actions</th>
@@ -157,6 +158,7 @@
                             <tr>
                               <td><%= account.first_name %> <%= account.last_name %></td>
                               <td><%= account.email %></td>
+                              <td><%= account.phone || '—' %></td>
                               <td>
                                 <label class="badge <%= account.category === 'admin' ? 'badge-success' : 'badge-light' %>">
                                   <%= account.category || 'user' %>
@@ -170,7 +172,7 @@
                           <% }); %>
                         <% } else { %>
                           <tr>
-                            <td colspan="5" class="text-center">
+                            <td colspan="6" class="text-center">
                               <%= searchQuery ? 'No accounts match your search.' : 'No accounts have been registered yet.' %>
                             </td>
                           </tr>
